@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.codingapi.dbstream</groupId>
     <artifactId>dbstream-driver</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
 
     <url>https://github.com/codingapi/dbstream-driver</url>
     <name>dbstream-driver</name>
@@ -30,9 +30,11 @@
         <maven.javadoc.version>3.6.3</maven.javadoc.version>
         <maven.gpg.version>3.0.1</maven.gpg.version>
 
-        <!-- dependencies properties-->
+        <!-- project dependencies properties-->
         <lombok.version>1.18.42</lombok.version>
         <jsqlparser.version>4.9</jsqlparser.version>
+
+        <!-- test dependencies properties-->
         <springboot.version>2.7.18</springboot.version>
         <h2.version>2.2.222</h2.version>
     </properties>
