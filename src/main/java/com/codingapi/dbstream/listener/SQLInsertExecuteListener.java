@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.listener;
 
+import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.parser.InsertDBEventParser;
 import com.codingapi.dbstream.scanner.DbTable;
@@ -28,7 +29,7 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
                 Insert insert = (Insert) parserStatement;
                 Table table = insert.getTable();
                 DbTable dbTable = executeState.getDbTable(table.getName());
-                if (dbTable != null) {
+                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable.getName())) {
                     InsertDBEventParser dataParser = new InsertDBEventParser(executeState, insert, table, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);

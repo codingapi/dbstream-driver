@@ -145,6 +145,13 @@ DBStreamContext.getInstance().addEventPusher(DBEventPusher pusher);
 DBStreamContext.getInstance().addListener(SQLExecuteListener listener);
 ```
 
+#### 数据库表支持判断
+
+```java
+// 添加 SQL 表执行判断
+DBStreamContext.getInstance().setDbTableSupportProvider(DBTableSupportProvider dbTableSupportProvider);
+```
+
 #### 元数据管理
 
 ```java

@@ -8,10 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 数据库的执行状态
@@ -215,6 +212,14 @@ public class SQLExecuteState {
         } catch (SQLException ignored) {
         }
         return list;
+    }
+
+
+    public Properties getDriverProperties(){
+        if (metaData == null) {
+            return null;
+        }
+        return this.metaData.getProperties();
     }
 
 

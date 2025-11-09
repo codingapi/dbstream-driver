@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.listener;
 
+import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.parser.DeleteDBEventParser;
 import com.codingapi.dbstream.scanner.DbTable;
@@ -28,7 +29,7 @@ public class SQLDeleteExecuteListener implements SQLExecuteListener {
                 Delete delete = (Delete) parserStatement;
                 Table table = delete.getTable();
                 DbTable dbTable = executeState.getDbTable(table.getName());
-                if (dbTable != null) {
+                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable.getName())) {
                     DeleteDBEventParser dataParser = new DeleteDBEventParser(executeState, delete, table, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);

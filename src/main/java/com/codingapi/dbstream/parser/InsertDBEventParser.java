@@ -6,12 +6,16 @@ import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
 import com.codingapi.dbstream.utils.SQLParamUtils;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.Values;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -100,7 +104,7 @@ public class InsertDBEventParser extends DBEventParser {
                 Object value = params.get(i);
                 String column = insertColumns.get(i);
                 DbColumn dbColumn = dbTable.getColumnByName(column);
-                if (dbColumn != null) {
+                if (dbColumn != null && !dbColumn.isPrimaryKey()) {
                     event.set(dbColumn.getName(), value);
                 }
             }
@@ -111,11 +115,17 @@ public class InsertDBEventParser extends DBEventParser {
 
 
     private List<String> loadInsertColumns() {
-        List<String> columns = new ArrayList<>();
-        for (Column column : this.insert.getColumns()) {
-            columns.add(column.getColumnName());
+        ExpressionList<?> values =  this.insert.getValues().getExpressions();
+        ExpressionList<Column> columns = this.insert.getColumns();
+        List<String> columnList = new ArrayList<>();
+        for (int i=0;i<columns.size();i++) {
+            Column column = columns.get(i);
+            Expression expression = values.get(i);
+            if(expression instanceof JdbcParameter) {
+                columnList.add(column.getColumnName());
+            }
         }
-        return columns;
+        return columnList;
     }
 
 

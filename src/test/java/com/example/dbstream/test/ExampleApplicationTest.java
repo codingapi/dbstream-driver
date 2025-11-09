@@ -18,9 +18,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Transactional
+
 @SpringBootTest
-@Rollback(false)
 class ExampleApplicationTest {
 
     @Autowired
@@ -40,6 +39,8 @@ class ExampleApplicationTest {
      * 常用操作测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test1() {
         DBStreamContext.getInstance().addListener(new MySQLListener());
 
@@ -74,6 +75,8 @@ class ExampleApplicationTest {
      * 添加数据测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test2() {
         User user = new User();
         user.setUsername("admin");
@@ -89,6 +92,8 @@ class ExampleApplicationTest {
      * 修改功能测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test3() {
         userRepository.resetPassword("123456");
     }
@@ -97,6 +102,8 @@ class ExampleApplicationTest {
      * 添加并修改测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test4() {
         User user = new User();
         user.setUsername("admin");
@@ -112,6 +119,8 @@ class ExampleApplicationTest {
      * 删除测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test5() {
         User user = new User();
         user.setUsername("admin");
@@ -129,6 +138,8 @@ class ExampleApplicationTest {
      * insert into select 测试
      */
     @Test
+    @Transactional
+    @Rollback(false)
     void test6() {
         userRepository.insertIntoFromSelect();
     }
@@ -139,7 +150,6 @@ class ExampleApplicationTest {
      */
     @Test
     @Transactional
-    @Rollback(value = false)
     void test7() {
         User user = new User();
         user.setUsername("admin");

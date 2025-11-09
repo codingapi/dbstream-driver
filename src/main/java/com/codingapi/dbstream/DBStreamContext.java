@@ -2,13 +2,17 @@ package com.codingapi.dbstream;
 
 import com.codingapi.dbstream.interceptor.SQLRunningContext;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
+import com.codingapi.dbstream.provider.DBTableSupportProvider;
+import com.codingapi.dbstream.provider.DefaultDBTableSupportProvider;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.stream.DBEventContext;
 import com.codingapi.dbstream.stream.DBEventPusher;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
+import java.util.Properties;
 
 /**
  * DBStream 对外提供的能力服务
@@ -17,6 +21,10 @@ public class DBStreamContext {
 
     @Getter
     private final static DBStreamContext instance = new DBStreamContext();
+
+    @Setter
+    private DBTableSupportProvider dbTableSupportProvider;
+
 
     private DBStreamContext() {
 
@@ -29,6 +37,19 @@ public class DBStreamContext {
      */
     public void addListener(SQLExecuteListener sqlExecuteListener) {
         SQLRunningContext.getInstance().addListener(sqlExecuteListener);
+    }
+
+    /**
+     * 是否支持SQL 拦截代理分析
+     * @param info 数据库连接信息
+     * @param tableName 数据库名称
+     * @return 是否支持
+     */
+    public boolean support(Properties info, String tableName) {
+        if (dbTableSupportProvider == null) {
+            this.dbTableSupportProvider = new DefaultDBTableSupportProvider();
+        }
+        return dbTableSupportProvider.support(info, tableName);
     }
 
 
