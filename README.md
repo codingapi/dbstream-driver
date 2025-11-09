@@ -116,6 +116,7 @@ public class MySQLListener implements SQLExecuteListener {
     public void after(SQLExecuteState executeState, Object result) {
         System.out.println("执行后 - SQL: " + executeState.getSql());
         System.out.println("执行后 - 参数: " + executeState.getListParams());
+        System.out.println("执行后 - 耗时: " + executeState.getExecuteTimestamp());
         System.out.println("执行后 - 结果: " + result);
     }
 }

@@ -27,7 +27,7 @@ public class ConnectionProxy implements Connection {
         this.generateTransactionKey();
     }
 
-    private void generateTransactionKey(){
+    private void generateTransactionKey() {
         this.transactionKey = UUID.randomUUID().toString().replaceAll("-", "");
     }
 

@@ -5,7 +5,10 @@ import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
+import com.codingapi.dbstream.utils.SQLParamUtils;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -15,26 +18,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InsertDataParser implements DataParser {
+public class InsertDBEventParser extends DBEventParser {
 
-    private final SQLExecuteState executeState;
     private final Insert insert;
-    private final String tableName;
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
-
-    public InsertDataParser(SQLExecuteState executeState, Insert insert) {
-        this.executeState = executeState;
-        this.insert = insert;
-        this.tableName = insert.getTable().getName();
-
+    public InsertDBEventParser(SQLExecuteState executeState, Statement statement, Table table, DbTable dbTable) {
+        super(executeState, statement, table, dbTable);
+        this.insert = (Insert) statement;
     }
 
     @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
-        if (!SQLParamUtils.isUpdateRow(result)) {
+        if (SQLParamUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
         if (this.prepareList.isEmpty()) {
@@ -82,36 +80,32 @@ public class InsertDataParser implements DataParser {
 
     private List<DBEvent> loadDefaultInsertEvent() {
         String jdbcUrl = this.executeState.getJdbcUrl();
-        DbTable dbTable = executeState.getTable(tableName);
         List<DBEvent> eventList = new ArrayList<>();
-        if (dbTable != null) {
-            List<Map<String, Object>> primaryKeyValues = this.executeState.getStatementGenerateKeys(dbTable);
-            for (Map<String, Object> map : primaryKeyValues) {
-                DBEvent event = new DBEvent(jdbcUrl, this.tableName, EventType.INSERT);
-                List<Object> params = this.executeState.getListParams();
-                List<String> insertColumns = this.loadInsertColumns();
-                //主键
-                for (String key : map.keySet()) {
-                    DbColumn dbColumn = dbTable.getColumnByName(key);
-                    if (dbColumn.isPrimaryKey()) {
-                        event.addPrimaryKey(dbColumn.getName());
-                    }
-                    event.set(dbColumn.getName(), map.get(key));
+        List<Map<String, Object>> primaryKeyValues = this.executeState.getStatementGenerateKeys(dbTable);
+        for (Map<String, Object> map : primaryKeyValues) {
+            DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
+            List<Object> params = this.executeState.getListParams();
+            List<String> insertColumns = this.loadInsertColumns();
+            //主键
+            for (String key : map.keySet()) {
+                DbColumn dbColumn = dbTable.getColumnByName(key);
+                if (dbColumn.isPrimaryKey()) {
+                    event.addPrimaryKey(dbColumn.getName());
                 }
-
-                //字段
-                for (int i = 0; i < params.size(); i++) {
-                    Object value = params.get(i);
-                    String column = insertColumns.get(i);
-                    DbColumn dbColumn = dbTable.getColumnByName(column);
-                    if (dbColumn != null) {
-                        event.set(dbColumn.getName(), value);
-                    }
-                }
-                eventList.add(event);
+                event.set(dbColumn.getName(), map.get(key));
             }
-        }
 
+            //字段
+            for (int i = 0; i < params.size(); i++) {
+                Object value = params.get(i);
+                String column = insertColumns.get(i);
+                DbColumn dbColumn = dbTable.getColumnByName(column);
+                if (dbColumn != null) {
+                    event.set(dbColumn.getName(), value);
+                }
+            }
+            eventList.add(event);
+        }
         return eventList;
     }
 

@@ -7,14 +7,24 @@ import java.util.List;
 
 public class DBEventContext {
 
-
     private final List<DBEventPusher> pushers = new ArrayList<>();
+
+    @Getter
+    private final List<String> blacklist = new ArrayList<>();
 
     @Getter
     private final static DBEventContext instance = new DBEventContext();
 
     private DBEventContext() {
 
+    }
+
+    public void addBlackList(String tableName) {
+        this.blacklist.add(tableName);
+    }
+
+    public void removeBlackList(String tableName) {
+        this.blacklist.remove(tableName);
     }
 
     void push(List<DBEvent> events) {

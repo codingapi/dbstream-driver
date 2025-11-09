@@ -16,17 +16,13 @@ import java.util.Map;
 
 public class CallableStatementProxy implements CallableStatement {
 
-    private final ConnectionProxy connection;
     private final CallableStatement callableStatement;
     private final DBMetaData metaData;
-    private final String sql;
     private final SQLExecuteState executeState;
 
     public CallableStatementProxy(ConnectionProxy connection, CallableStatement callableStatement, DBMetaData metaData, String sql) throws SQLException {
-        this.connection = connection;
         this.callableStatement = callableStatement;
         this.metaData = metaData;
-        this.sql = sql;
         this.executeState = new SQLExecuteState(sql, connection, this, metaData);
         this.cachedKeys = null;
     }

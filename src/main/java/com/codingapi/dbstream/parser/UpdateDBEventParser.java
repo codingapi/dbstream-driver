@@ -5,9 +5,11 @@ import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
+import com.codingapi.dbstream.utils.SQLParamUtils;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 
@@ -16,27 +18,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateDataParser implements DataParser {
+public class UpdateDBEventParser extends DBEventParser {
 
-    private final SQLExecuteState executeState;
     private final Update update;
-    private final Table table;
     private final String aliasTable;
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
-    public UpdateDataParser(SQLExecuteState executeState, Update update) {
-        this.executeState = executeState;
-        this.update = update;
-        this.table = this.update.getTable();
-        Alias alias = this.table.getAlias();
+
+    public UpdateDBEventParser(SQLExecuteState executeState, Statement statement, Table table, DbTable dbTable) {
+        super(executeState, statement, table, dbTable);
+        this.update = (Update) statement;
+        Alias alias = table.getAlias();
         if (alias != null) {
             this.aliasTable = alias.getName();
         } else {
             this.aliasTable = null;
         }
     }
-
 
     @Override
     public void prepare() throws SQLException {
@@ -52,17 +51,14 @@ public class UpdateDataParser implements DataParser {
 
     private String loadUpdateRowSQL() {
         Expression expression = this.update.getWhere();
-        String tableName = this.table.getName();
-        DbTable dbTable = this.executeState.getTable(tableName);
+        String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
-        if (dbTable != null) {
-            for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-                if (this.aliasTable != null) {
-                    querySQL.append(this.aliasTable).append(".");
-                }
-                querySQL.append(dbColumn.getName()).append(",");
+        for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
+            if (this.aliasTable != null) {
+                querySQL.append(this.aliasTable).append(".");
             }
+            querySQL.append(dbColumn.getName()).append(",");
         }
         querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
@@ -106,36 +102,33 @@ public class UpdateDataParser implements DataParser {
     @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
-        if (!SQLParamUtils.isUpdateRow(result)) {
+        if (SQLParamUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
         List<Object> updateParams = this.executeState.getListParams();
-        DbTable dbTable = this.executeState.getTable(table.getName());
-        if (dbTable != null) {
-            for (Map<String, Object> params : this.prepareList) {
-                String jdbcUrl = this.executeState.getJdbcUrl();
-                DBEvent event = new DBEvent(jdbcUrl, this.table.getName(), EventType.UPDATE);
-                List<UpdateSet> updateSets = this.update.getUpdateSets();
-                for (int i = 0; i < updateSets.size(); i++) {
-                    UpdateSet updateSet = updateSets.get(i);
-                    Object value = updateParams.get(i);
-                    updateSet.getColumns().forEach(column -> {
-                        String columnName = column.getColumnName();
-                        DbColumn dbColumn = dbTable.getColumnByName(columnName);
-                        if (dbColumn != null) {
-                            event.set(dbColumn.getName(), value);
-                        }
-                    });
-                }
-                for (String key : params.keySet()) {
-                    DbColumn dbColumn = dbTable.getColumnByName(key);
+        for (Map<String, Object> params : this.prepareList) {
+            String jdbcUrl = this.executeState.getJdbcUrl();
+            DBEvent event = new DBEvent(jdbcUrl, this.table.getName(), EventType.UPDATE);
+            List<UpdateSet> updateSets = this.update.getUpdateSets();
+            for (int i = 0; i < updateSets.size(); i++) {
+                UpdateSet updateSet = updateSets.get(i);
+                Object value = updateParams.get(i);
+                updateSet.getColumns().forEach(column -> {
+                    String columnName = column.getColumnName();
+                    DbColumn dbColumn = dbTable.getColumnByName(columnName);
                     if (dbColumn != null) {
-                        event.set(dbColumn.getName(), params.get(key));
-                        event.addPrimaryKey(dbColumn.getName());
+                        event.set(dbColumn.getName(), value);
                     }
-                }
-                eventList.add(event);
+                });
             }
+            for (String key : params.keySet()) {
+                DbColumn dbColumn = dbTable.getColumnByName(key);
+                if (dbColumn != null) {
+                    event.set(dbColumn.getName(), params.get(key));
+                    event.addPrimaryKey(dbColumn.getName());
+                }
+            }
+            eventList.add(event);
         }
         return eventList;
     }

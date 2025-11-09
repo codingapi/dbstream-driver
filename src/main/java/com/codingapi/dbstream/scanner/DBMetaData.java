@@ -44,10 +44,6 @@ public class DBMetaData {
         updateTime = System.currentTimeMillis();
     }
 
-    public boolean hasMetaData() {
-        return this.tables != null && !this.tables.isEmpty();
-    }
-
     public DbTable getTable(String tableName) {
         if (this.tables == null) {
             return null;

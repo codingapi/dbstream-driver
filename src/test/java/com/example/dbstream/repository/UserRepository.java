@@ -24,7 +24,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("select count(u) from User as u")
     int counts();
 
-
     @Modifying
     @Query("insert into User(email,username,password,nickname) select u.email,u.username,u.password,u.nickname from User u")
     int insertIntoFromSelect();

@@ -62,6 +62,19 @@ public class SQLExecuteState {
     @Getter
     private Object result;
 
+    /**
+     * 开始执行SQL时间戳
+     */
+    @Getter
+    private long beginTimestamp;
+
+    /**
+     * 结束执行SQL时间戳
+     */
+    @Getter
+    private long afterTimestamp;
+
+
     public SQLExecuteState(String sql, ConnectionProxy connection, Statement statement, DBMetaData metaData) {
         this.sql = sql;
         this.connection = connection;
@@ -70,6 +83,30 @@ public class SQLExecuteState {
 
         this.listParams = new ArrayList<>();
         this.mapParams = new HashMap<>();
+    }
+
+    /**
+     * 记录执行前时间
+     */
+    void begin() {
+        this.beginTimestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * 记录执行后时间
+     */
+    void after() {
+        this.afterTimestamp = System.currentTimeMillis();
+    }
+
+
+    /**
+     * SQL执行总耗时
+     *
+     * @return 执行耗时
+     */
+    public long getExecuteTimestamp() {
+        return this.afterTimestamp - this.beginTimestamp;
     }
 
     /**
@@ -106,22 +143,21 @@ public class SQLExecuteState {
         return metaData.getTable(tableName);
     }
 
-
     /**
-     * 是否有metadata数据
+     * 元数据中是否存在表
      *
+     * @param tableName 表名称
      * @return true 存在
      */
-    public boolean hasMetaData() {
-        return metaData != null && metaData.hasMetaData();
+    public DbTable getDbTable(String tableName) {
+        return this.metaData != null ? this.metaData.getTable(tableName) : null;
     }
-
 
     /**
      * 获取事务标识信息
      */
-    public String getTransactionKey(){
-        if(this.connection!=null){
+    public String getTransactionKey() {
+        if (this.connection != null) {
             return this.connection.getTransactionKey();
         }
         return null;

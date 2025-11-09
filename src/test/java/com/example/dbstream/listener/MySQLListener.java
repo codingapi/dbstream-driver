@@ -11,7 +11,7 @@ public class MySQLListener implements SQLExecuteListener {
 
     @Override
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
-        log.info("after sql:{},params:{}", executeState.getSql(), executeState.getListParams());
+        log.info("after sql:{},params:{},execute timestamp:{}", executeState.getSql(), executeState.getListParams(), executeState.getExecuteTimestamp());
     }
 
     @Override

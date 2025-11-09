@@ -21,16 +21,16 @@ public class TransactionEventPools {
     }
 
 
-    public void setAutoCommit(boolean autoCommit){
+    public void setAutoCommit(boolean autoCommit) {
         autoMode.set(autoCommit);
     }
 
-    public boolean isAutoCommit(){
-        return autoMode.get()!=null && autoMode.get();
+    public boolean isAutoCommit() {
+        return autoMode.get() != null && autoMode.get();
     }
 
 
-    public void addEvents(String transactionKey,List<DBEvent> events) {
+    public void addEvents(String transactionKey, List<DBEvent> events) {
         List<DBEvent> currentEvents = pools.get();
         if (currentEvents == null) {
             currentEvents = new ArrayList<>();
@@ -38,7 +38,7 @@ public class TransactionEventPools {
         }
         currentEvents.addAll(events);
 
-        if(this.isAutoCommit()){
+        if (this.isAutoCommit()) {
             this.commitEvents(transactionKey);
         }
 
@@ -46,6 +46,7 @@ public class TransactionEventPools {
 
     /**
      * 提交消息
+     *
      * @param transactionKey 事务标示
      */
     public void commitEvents(String transactionKey) {
@@ -62,10 +63,11 @@ public class TransactionEventPools {
 
     /**
      * 回滚消息
+     *
      * @param transactionKey 事务标示
      */
     public void rollbackEvents(String transactionKey) {
-       this.clear();
+        this.clear();
     }
 
     public void clear() {

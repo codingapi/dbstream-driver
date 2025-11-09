@@ -27,6 +27,7 @@ public class SQLRunningContext implements SQLExecuteListener {
     @Override
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         executeState.setResult(result);
+        executeState.after();
         for (SQLExecuteListener listener : listeners) {
             listener.after(executeState, result);
         }
@@ -35,6 +36,7 @@ public class SQLRunningContext implements SQLExecuteListener {
 
     @Override
     public void before(SQLExecuteState executeState) throws SQLException {
+        executeState.begin();
         for (SQLExecuteListener listener : listeners) {
             listener.before(executeState);
         }

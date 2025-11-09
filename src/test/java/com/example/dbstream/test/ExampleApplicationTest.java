@@ -148,7 +148,7 @@ class ExampleApplicationTest {
         user.setNickname("admin");
         userRepository.save(user);
 
-        assertThrows(ArithmeticException.class,()->{
+        assertThrows(ArithmeticException.class, () -> {
             int result = 100 / 0;
             System.out.println(result);
         });

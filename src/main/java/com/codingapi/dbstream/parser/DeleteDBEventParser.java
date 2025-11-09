@@ -5,9 +5,11 @@ import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
+import com.codingapi.dbstream.utils.SQLParamUtils;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 
 import java.sql.SQLException;
@@ -15,27 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteDataParser implements DataParser {
-
-    private final SQLExecuteState executeState;
-    private final Delete delete;
-    private final Table table;
-    private final String aliasTable;
+public class DeleteDBEventParser extends DBEventParser {
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
-    public DeleteDataParser(SQLExecuteState executeState, Delete delete) {
-        this.executeState = executeState;
-        this.delete = delete;
-        this.table = this.delete.getTable();
-        Alias alias = this.table.getAlias();
+    private final String aliasTable;
+    private final Delete delete;
+
+    public DeleteDBEventParser(SQLExecuteState executeState, Statement statement, Table table, DbTable dbTable) {
+        super(executeState, statement, table, dbTable);
+        this.delete = (Delete) statement;
+        Alias alias = table.getAlias();
         if (alias != null) {
             this.aliasTable = alias.getName();
         } else {
             this.aliasTable = null;
         }
     }
-
 
     @Override
     public void prepare() throws SQLException {
@@ -51,17 +49,14 @@ public class DeleteDataParser implements DataParser {
 
     private String loadUpdateRowSQL() {
         Expression expression = this.delete.getWhere();
-        String tableName = this.table.getName();
-        DbTable dbTable = this.executeState.getTable(tableName);
+        String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
-        if (dbTable != null) {
-            for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-                if (this.aliasTable != null) {
-                    querySQL.append(this.aliasTable).append(".");
-                }
-                querySQL.append(dbColumn.getName()).append(",");
+        for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
+            if (this.aliasTable != null) {
+                querySQL.append(this.aliasTable).append(".");
             }
+            querySQL.append(dbColumn.getName()).append(",");
         }
         querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
@@ -105,23 +100,20 @@ public class DeleteDataParser implements DataParser {
     @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
-        if (!SQLParamUtils.isUpdateRow(result)) {
+        if (SQLParamUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
-        DbTable dbTable = this.executeState.getTable(table.getName());
-        if (dbTable != null) {
-            for (Map<String, Object> params : this.prepareList) {
-                String jdbcUrl = this.executeState.getJdbcUrl();
-                DBEvent event = new DBEvent(jdbcUrl, this.table.getName(), EventType.DELETE);
-                for (String key : params.keySet()) {
-                    DbColumn dbColumn = dbTable.getColumnByName(key);
-                    if (dbColumn != null) {
-                        event.set(dbColumn.getName(), params.get(key));
-                        event.addPrimaryKey(dbColumn.getName());
-                    }
+        for (Map<String, Object> params : this.prepareList) {
+            String jdbcUrl = this.executeState.getJdbcUrl();
+            DBEvent event = new DBEvent(jdbcUrl, this.table.getName(), EventType.DELETE);
+            for (String key : params.keySet()) {
+                DbColumn dbColumn = dbTable.getColumnByName(key);
+                if (dbColumn != null) {
+                    event.set(dbColumn.getName(), params.get(key));
+                    event.addPrimaryKey(dbColumn.getName());
                 }
-                eventList.add(event);
             }
+            eventList.add(event);
         }
         return eventList;
     }
