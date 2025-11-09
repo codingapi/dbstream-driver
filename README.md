@@ -62,11 +62,7 @@ public class MySQLListener implements SQLExecuteListener {
 }
 
 // 在应用启动后注册（例如 @PostConstruct、测试用 @BeforeEach 等）
-DBStreamContext.
-
-getInstance().
-
-addListener(new MySQLListener());
+DBStreamContext.getInstance().addListener(new MySQLListener());
 ```
 
 4) 订阅数据库事件推送（INSERT/UPDATE/DELETE 的行级事件）
@@ -78,11 +74,9 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.DBEventPusher;
 
-DBStreamContext.getInstance().
-
-addEventPusher(new DBEventPusher() {
+DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
     @Override
-    public void push (java.util.List < DBEvent > events) {
+    public void push(List<DBEvent> events) {
         System.out.println(events);
     }
 });
