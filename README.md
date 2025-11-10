@@ -125,6 +125,19 @@ public class MySQLListener implements SQLExecuteListener {
 DBStreamContext.getInstance().addListener(new MySQLListener());
 ```
 
+### 4. 查看表或情况表缓存数据（可选）
+
+在项目启动以后，会在项目的根路径下创建dbstream文件夹，文件夹中存储的内容为数据库的表扫描缓存数据。  
+文件夹的名称为jdbcKey的字段，文件夹下的内容为缓存的表结构信息，当表结构发生变化以后可以删除对应的文件进行更新。  
+也可以在系统中通过执行 `DBStreamContext.getInstance().clear(String jdbcKey);`进行情况数据。   
+jdbcKey是通过sha256(jdbcUrl+schema)计算得来。
+```
+.
+└── beefae7e00deb825a3a591ab7a22791a4df799afba9fed71f8b549665508c7ee
+    └── M_USER
+
+```
+
 ## 📖 API 文档
 
 ### DBStreamContext
