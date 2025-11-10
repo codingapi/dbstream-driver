@@ -220,6 +220,25 @@ mvn clean test -P travis
 
 欢迎提交 Issue 和 Pull Request！
 
+## QA
+
+Q: 如果存在com.github.jsqlparser冲突问题，可以在maven配置中忽略掉  
+A：maven配置如下  
+```
+ <dependency>
+    <groupId>com.codingapi.dbstream</groupId>
+    <artifactId>dbstream-driver</artifactId>
+    <version>${latest.version}</version>
+    <exclusions>
+        <exclusion>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+
 ## 📞 联系方式
 
 - 项目地址: https://github.com/codingapi/dbstream-driver
