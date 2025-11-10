@@ -2,11 +2,12 @@ package com.codingapi.dbstream.scanner;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class DbTable {
+public class DbTable implements Serializable {
 
     private final String name;
     private final String comment;
@@ -31,6 +32,23 @@ public class DbTable {
         }
     }
 
+    public void addColum(DbColumn column){
+        this.columns.add(column);
+    }
+
+
+    public void addPrimaryKey(String key){
+        this.primaryKeys.add(key);
+    }
+
+    public boolean hasColumns(){
+        return !this.columns.isEmpty();
+    }
+
+    public boolean hasPrimaryKeys(){
+        return !this.primaryKeys.isEmpty();
+    }
+
     public boolean isPrimaryKey(String columnName) {
         for (String primaryKey : this.primaryKeys) {
             return primaryKey.equalsIgnoreCase(columnName);
@@ -43,5 +61,15 @@ public class DbTable {
             if (dbColumn.getName().equalsIgnoreCase(column)) return dbColumn;
         }
         return null;
+    }
+
+    public void setColumns(List<DbColumn> columns) {
+        this.columns.clear();
+        this.columns.addAll(columns);
+    }
+
+    public void setPrimaryKeys(List<String> primaryKeys) {
+        this.primaryKeys.clear();
+        this.primaryKeys.addAll(primaryKeys);
     }
 }

@@ -1,10 +1,11 @@
 package com.codingapi.dbstream.scanner;
 
+import com.codingapi.dbstream.utils.DBTableSerializableHelper;
+import com.codingapi.dbstream.utils.SHA256Util;
 import lombok.Getter;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 
 public class DBMetaData {
@@ -15,10 +16,12 @@ public class DBMetaData {
     /**
      * 创建唯一标识
      *
-     * @return uuid
+     * @return sha256(jdbcUrl+schema)
      */
-    private static String generateKey() {
-        return UUID.randomUUID().toString().replaceAll("-", "");
+    private String generateKey(String schema) {
+        String jdbcUrl = this.getJdbcUrl();
+        String data = String.format("%s#%s", jdbcUrl, schema == null ? "" : schema);
+        return SHA256Util.sha256(data);
     }
 
     @Getter
@@ -30,9 +33,9 @@ public class DBMetaData {
     @Getter
     private final Properties properties;
 
-    public DBMetaData(Properties properties) {
+    public DBMetaData(Properties properties, String schema) {
         this.properties = properties;
-        this.properties.setProperty(DBMetaData.KEY_JDBC_KEY, DBMetaData.generateKey());
+        this.properties.setProperty(DBMetaData.KEY_JDBC_KEY, this.generateKey(schema));
     }
 
 
@@ -42,6 +45,10 @@ public class DBMetaData {
 
     public void success() {
         updateTime = System.currentTimeMillis();
+    }
+
+    public boolean isEmpty() {
+        return this.tables == null || this.tables.isEmpty();
     }
 
     public DbTable getTable(String tableName) {
@@ -55,6 +62,12 @@ public class DBMetaData {
             }
         }
         return null;
+    }
+
+    public void clean(){
+        DBTableSerializableHelper tableSerializableHelper = new DBTableSerializableHelper(this.getKeyJdbcKey());
+        tableSerializableHelper.clean();
+        this.tables = null;
     }
 
     public String getJdbcUrl() {

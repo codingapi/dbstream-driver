@@ -12,6 +12,8 @@ public class DBEventContext {
     @Getter
     private final static DBEventContext instance = new DBEventContext();
 
+    private final DefaultDBEventPusher defaultDBEventPusher = new DefaultDBEventPusher();
+
     private DBEventContext() {
 
     }
@@ -27,6 +29,8 @@ public class DBEventContext {
             for (DBEventPusher pusher : pushers) {
                 pusher.push(events);
             }
+        }else {
+            defaultDBEventPusher.push(events);
         }
     }
 

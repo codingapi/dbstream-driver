@@ -29,7 +29,7 @@ public class SQLUpdateExecuteListener implements SQLExecuteListener {
                 Update update = (Update) parserStatement;
                 Table table = update.getTable();
                 DbTable dbTable = executeState.getDbTable(table.getName());
-                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable.getName())) {
+                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     UpdateDBEventParser dataParser = new UpdateDBEventParser(executeState, update, table, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);

@@ -1,63 +1,91 @@
 package com.codingapi.dbstream.scanner;
 
+import com.codingapi.dbstream.utils.DBTableSerializableHelper;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class DBScanner {
 
     private final Connection connection;
+    private final DBMetaData dbMetaData;
+    private final DatabaseMetaData metaData;
+    private final String catalog;
+    private final String schema;
+    private final DBTableSerializableHelper dbTableSerializableHelper;
 
-    public DBScanner(Connection connection) {
+    public DBScanner(Connection connection, Properties info) throws SQLException {
         this.connection = connection;
+        this.schema = connection.getSchema();
+        this.metaData = connection.getMetaData();
+        this.catalog = connection.getCatalog();
+        this.dbMetaData = new DBMetaData(info, this.schema);
+        this.dbTableSerializableHelper = new DBTableSerializableHelper(this.dbMetaData.getKeyJdbcKey());
+    }
+
+
+    private void loadDbTableInfo(String tableName, DbTable tableInfo) throws SQLException {
+        String dbTableName = tableInfo.getName();
+        if (dbTableSerializableHelper.hasSerialize(dbTableName)) {
+            DbTable dbTableCache = dbTableSerializableHelper.deserialize(dbTableName);
+            tableInfo.setColumns(dbTableCache.getColumns());
+            tableInfo.setPrimaryKeys(dbTableCache.getPrimaryKeys());
+            tableInfo.reloadPrimaryColumns();
+            return;
+        }
+
+        // 获取列信息
+        ResultSet columns = metaData.getColumns(catalog, schema, tableName, "%");
+        while (columns.next()) {
+            DbColumn column = new DbColumn();
+            column.setName(columns.getString("COLUMN_NAME"));
+            column.setType(columns.getString("TYPE_NAME"));
+            column.setNullable(columns.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
+            column.setComment(columns.getString("REMARKS"));
+            column.setSize(columns.getInt("COLUMN_SIZE"));
+            tableInfo.addColum(column);
+        }
+        columns.close();
+
+        // 获取主键信息
+        ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName);
+        while (pkRs.next()) {
+            String pkColumn = pkRs.getString("COLUMN_NAME");
+            tableInfo.addPrimaryKey(pkColumn);
+        }
+        pkRs.close();
+        tableInfo.reloadPrimaryColumns();
+
+        dbTableSerializableHelper.serialize(tableInfo);
     }
 
     /**
      * 扫描数据库中的所有表、字段和主键信息
      */
-    public DBMetaData loadMetadata(Properties info) throws SQLException {
-        DBMetaData dbMetaData = new DBMetaData(info);
+    public DBMetaData loadMetadata() throws SQLException {
+        if (!this.dbMetaData.isEmpty()) {
+            return dbMetaData;
+        }
+
         DatabaseMetaData metaData = connection.getMetaData();
         String catalog = connection.getCatalog();
         String schema = connection.getSchema();
+        LinkedHashMap<String, DbTable> tableMap = new LinkedHashMap<>();
         ResultSet tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
-        Map<String, DbTable> tableInfoMap = new LinkedHashMap<>();
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");
             String remarks = tables.getString("REMARKS");
             DbTable tableInfo = new DbTable(tableName, remarks);
-
-            // 获取列信息
-            ResultSet columns = metaData.getColumns(catalog, schema, tableName, "%");
-            while (columns.next()) {
-                DbColumn column = new DbColumn();
-                column.setName(columns.getString("COLUMN_NAME"));
-                column.setType(columns.getString("TYPE_NAME"));
-                column.setNullable(columns.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
-                column.setComment(columns.getString("REMARKS"));
-                column.setSize(columns.getInt("COLUMN_SIZE"));
-                tableInfo.getColumns().add(column);
-            }
-            columns.close();
-
-            // 获取主键信息
-            ResultSet pkRs = metaData.getPrimaryKeys(catalog, schema, tableName);
-            while (pkRs.next()) {
-                String pkColumn = pkRs.getString("COLUMN_NAME");
-                tableInfo.getPrimaryKeys().add(pkColumn);
-            }
-            pkRs.close();
-            tableInfo.reloadPrimaryColumns();
-
-            tableInfoMap.put(tableName, tableInfo);
+            this.loadDbTableInfo(tableName, tableInfo);
+            tableMap.put(tableName, tableInfo);
         }
         tables.close();
-        dbMetaData.setTables(new ArrayList<>(tableInfoMap.values()));
+        dbMetaData.setTables(new ArrayList<>(tableMap.values()));
         dbMetaData.success();
         return dbMetaData;
     }

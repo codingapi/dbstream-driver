@@ -29,7 +29,7 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
                 Insert insert = (Insert) parserStatement;
                 Table table = insert.getTable();
                 DbTable dbTable = executeState.getDbTable(table.getName());
-                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable.getName())) {
+                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     InsertDBEventParser dataParser = new InsertDBEventParser(executeState, insert, table, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);

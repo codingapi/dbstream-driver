@@ -6,6 +6,7 @@ import com.codingapi.dbstream.provider.DBTableSupportProvider;
 import com.codingapi.dbstream.provider.DefaultDBTableSupportProvider;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
+import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.stream.DBEventContext;
 import com.codingapi.dbstream.stream.DBEventPusher;
 import lombok.Getter;
@@ -42,14 +43,14 @@ public class DBStreamContext {
     /**
      * 是否支持SQL 拦截代理分析
      * @param info 数据库连接信息
-     * @param tableName 数据库名称
+     * @param dbTable 数据库表信息
      * @return 是否支持
      */
-    public boolean support(Properties info, String tableName) {
+    public boolean support(Properties info, DbTable dbTable) {
         if (dbTableSupportProvider == null) {
             this.dbTableSupportProvider = new DefaultDBTableSupportProvider();
         }
-        return dbTableSupportProvider.support(info, tableName);
+        return dbTableSupportProvider.support(info, dbTable);
     }
 
 

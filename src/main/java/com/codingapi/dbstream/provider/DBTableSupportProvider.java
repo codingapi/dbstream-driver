@@ -1,5 +1,7 @@
 package com.codingapi.dbstream.provider;
 
+import com.codingapi.dbstream.scanner.DbTable;
+
 import java.util.Properties;
 
 /**
@@ -7,5 +9,5 @@ import java.util.Properties;
  */
 public interface DBTableSupportProvider {
 
-    boolean support(Properties info,String tableName);
+    boolean support(Properties info, DbTable dbTable);
 }

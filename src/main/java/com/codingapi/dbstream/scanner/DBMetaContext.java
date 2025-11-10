@@ -44,6 +44,9 @@ public class DBMetaContext {
      * 清空所有的元数据信息
      */
     public void clearAll() {
+        for (DBMetaData metaData : this.cache.values()) {
+            metaData.clean();
+        }
         cache.clear();
     }
 
@@ -75,6 +78,10 @@ public class DBMetaContext {
      * @param jdbcKey 指定数据库信息
      */
     public void clear(String jdbcKey) {
+        DBMetaData dbMetaData = cache.get(jdbcKey);
+        if (dbMetaData != null) {
+            dbMetaData.clean();
+        }
         cache.remove(jdbcKey);
     }
 

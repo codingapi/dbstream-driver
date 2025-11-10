@@ -171,7 +171,8 @@ public class SQLExecuteState {
     public List<Map<String, Object>> query(String sql, List<Object> params) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         for (int i = 0; i < params.size(); i++) {
-            preparedStatement.setObject(i + 1, params.get(i));
+            Object param = params.get(i);
+            preparedStatement.setObject(i + 1,param);
         }
         ResultSet resultSet = preparedStatement.executeQuery();
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();

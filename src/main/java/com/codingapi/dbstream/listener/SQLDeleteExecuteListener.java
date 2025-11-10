@@ -29,7 +29,7 @@ public class SQLDeleteExecuteListener implements SQLExecuteListener {
                 Delete delete = (Delete) parserStatement;
                 Table table = delete.getTable();
                 DbTable dbTable = executeState.getDbTable(table.getName());
-                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable.getName())) {
+                if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     DeleteDBEventParser dataParser = new DeleteDBEventParser(executeState, delete, table, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);
