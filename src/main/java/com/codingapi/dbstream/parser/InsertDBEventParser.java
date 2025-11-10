@@ -115,13 +115,13 @@ public class InsertDBEventParser extends DBEventParser {
 
 
     private List<String> loadInsertColumns() {
-        ExpressionList<?> values =  this.insert.getValues().getExpressions();
+        ExpressionList<?> values = this.insert.getValues().getExpressions();
         ExpressionList<Column> columns = this.insert.getColumns();
         List<String> columnList = new ArrayList<>();
-        for (int i=0;i<columns.size();i++) {
+        for (int i = 0; i < columns.size(); i++) {
             Column column = columns.get(i);
             Expression expression = values.get(i);
-            if(expression instanceof JdbcParameter) {
+            if (expression instanceof JdbcParameter) {
                 columnList.add(column.getColumnName());
             }
         }

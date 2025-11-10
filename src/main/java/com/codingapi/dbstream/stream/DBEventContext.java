@@ -29,7 +29,7 @@ public class DBEventContext {
             for (DBEventPusher pusher : pushers) {
                 pusher.push(events);
             }
-        }else {
+        } else {
             defaultDBEventPusher.push(events);
         }
     }

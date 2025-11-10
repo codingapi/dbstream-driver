@@ -2,6 +2,7 @@ package com.codingapi.dbstream.interceptor;
 
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.scanner.DBMetaData;
+import com.codingapi.dbstream.scanner.DBScanner;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import lombok.Getter;
@@ -128,19 +129,6 @@ public class SQLExecuteState {
 
 
     /**
-     * 获取表的元数据数据信息
-     *
-     * @param tableName 表名称 不区分大小写
-     * @return 表数据
-     */
-    public DbTable getTable(String tableName) {
-        if (metaData == null) {
-            return null;
-        }
-        return metaData.getTable(tableName);
-    }
-
-    /**
      * 元数据中是否存在表
      *
      * @param tableName 表名称
@@ -172,7 +160,7 @@ public class SQLExecuteState {
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         for (int i = 0; i < params.size(); i++) {
             Object param = params.get(i);
-            preparedStatement.setObject(i + 1,param);
+            preparedStatement.setObject(i + 1, param);
         }
         ResultSet resultSet = preparedStatement.executeQuery();
         ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
@@ -216,7 +204,11 @@ public class SQLExecuteState {
     }
 
 
-    public Properties getDriverProperties(){
+    /**
+     * 获取驱动配置信息
+     * @return Properties
+     */
+    public Properties getDriverProperties() {
         if (metaData == null) {
             return null;
         }
@@ -224,10 +216,27 @@ public class SQLExecuteState {
     }
 
 
+    /**
+     * 获取数据库的jdbcUrl
+     * @return jdbcUrl
+     */
     public String getJdbcUrl() {
         if (metaData == null) {
             return null;
         }
         return metaData.getJdbcUrl();
+    }
+
+
+    /**
+     * 更新数据库的元数据信息
+     * @param tableName 表名
+     */
+    public void updateMetaData(String tableName) throws SQLException {
+        // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
+        if (this.metaData.isUpdateTableMeta(tableName)) {
+            DBScanner dbScanner = new DBScanner(connection, getDriverProperties());
+            dbScanner.updateMetadata(this.metaData);
+        }
     }
 }

@@ -28,6 +28,7 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
                 Statement parserStatement = CCJSqlParserUtil.parse(sql);
                 Insert insert = (Insert) parserStatement;
                 Table table = insert.getTable();
+                executeState.updateMetaData(table.getName());
                 DbTable dbTable = executeState.getDbTable(table.getName());
                 if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     InsertDBEventParser dataParser = new InsertDBEventParser(executeState, insert, table, dbTable);

@@ -28,6 +28,7 @@ public class SQLDeleteExecuteListener implements SQLExecuteListener {
                 Statement parserStatement = CCJSqlParserUtil.parse(sql);
                 Delete delete = (Delete) parserStatement;
                 Table table = delete.getTable();
+                executeState.updateMetaData(table.getName());
                 DbTable dbTable = executeState.getDbTable(table.getName());
                 if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     DeleteDBEventParser dataParser = new DeleteDBEventParser(executeState, delete, table, dbTable);

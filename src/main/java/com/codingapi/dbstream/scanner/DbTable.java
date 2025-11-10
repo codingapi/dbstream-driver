@@ -32,20 +32,20 @@ public class DbTable implements Serializable {
         }
     }
 
-    public void addColum(DbColumn column){
+    public void addColum(DbColumn column) {
         this.columns.add(column);
     }
 
 
-    public void addPrimaryKey(String key){
+    public void addPrimaryKey(String key) {
         this.primaryKeys.add(key);
     }
 
-    public boolean hasColumns(){
+    public boolean hasColumns() {
         return !this.columns.isEmpty();
     }
 
-    public boolean hasPrimaryKeys(){
+    public boolean hasPrimaryKeys() {
         return !this.primaryKeys.isEmpty();
     }
 

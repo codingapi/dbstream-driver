@@ -45,7 +45,7 @@ public class DBMetaContext {
      */
     public void clearAll() {
         for (DBMetaData metaData : this.cache.values()) {
-            metaData.clean();
+            metaData.cleanSerializable();
         }
         cache.clear();
     }
@@ -80,7 +80,7 @@ public class DBMetaContext {
     public void clear(String jdbcKey) {
         DBMetaData dbMetaData = cache.get(jdbcKey);
         if (dbMetaData != null) {
-            dbMetaData.clean();
+            dbMetaData.cleanSerializable();
         }
         cache.remove(jdbcKey);
     }

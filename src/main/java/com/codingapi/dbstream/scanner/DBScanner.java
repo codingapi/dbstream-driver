@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 
 public class DBScanner {
@@ -88,6 +89,33 @@ public class DBScanner {
         dbMetaData.setTables(new ArrayList<>(tableMap.values()));
         dbMetaData.success();
         return dbMetaData;
+    }
+
+
+    /**
+     * 更新对应表的元数据信息
+     *
+     * @param dbMetaData 数据库下的所有元数据信息
+     * @throws SQLException SQLException
+     */
+    public void updateMetadata(DBMetaData dbMetaData) throws SQLException {
+        DatabaseMetaData metaData = connection.getMetaData();
+        String catalog = connection.getCatalog();
+        String schema = connection.getSchema();
+        ResultSet tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
+        List<DbTable> updateList = new ArrayList<>();
+        while (tables.next()) {
+            String tableName = tables.getString("TABLE_NAME");
+            String remarks = tables.getString("REMARKS");
+            if (dbMetaData.isUpdateTableMeta(tableName)) {
+                DbTable tableInfo = new DbTable(tableName, remarks);
+                this.loadDbTableInfo(tableName, tableInfo);
+                updateList.add(tableInfo);
+            }
+        }
+        tables.close();
+        dbMetaData.updateDbTable(updateList);
+        dbMetaData.success();
     }
 
 

@@ -174,13 +174,16 @@ List<DBMetaData> metaDataList = DBStreamContext.getInstance().metaDataList();
 // 通过 jdbcKey 获取指定数据库的元数据信息
 DBMetaData metaData = DBStreamContext.getInstance().getMetaData(String jdbcKey);
 
+// 主动更新表的元数据信息，在使用改变时将会先更新metadata然后再执行业务。（动态更新表的元数据）
+metaData.addUpdateTableMateList(String tableName);
+
 // 获取所有已缓存的数据库连接 jdbcKey 列表
 List<String> dbKeys = DBStreamContext.getInstance().loadDbKeys();
 
-// 清理指定数据库的元数据缓存（清空后下次访问会自动重新加载）
+// 清理指定数据库的元数据缓存（清空后下次访问会自动重新加载，动态更新表的元数据）
 DBStreamContext.getInstance().clear(String jdbcKey);
 
-// 清理所有数据库的元数据缓存
+// 清理所有数据库的元数据缓存（动态更新表的元数据）
 DBStreamContext.getInstance().clearAll();
 ```
 

@@ -42,7 +42,8 @@ public class DBStreamContext {
 
     /**
      * 是否支持SQL 拦截代理分析
-     * @param info 数据库连接信息
+     *
+     * @param info    数据库连接信息
      * @param dbTable 数据库表信息
      * @return 是否支持
      */

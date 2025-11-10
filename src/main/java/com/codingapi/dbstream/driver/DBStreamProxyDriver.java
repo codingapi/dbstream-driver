@@ -27,7 +27,7 @@ public class DBStreamProxyDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        if(this.driver==null){
+        if (this.driver == null) {
             this.acceptsURL(url);
         }
         Connection connection = driver.connect(url, info);
@@ -35,7 +35,7 @@ public class DBStreamProxyDriver implements Driver {
         String jdbcKey = info.getProperty(DBMetaData.KEY_JDBC_KEY);
         DBMetaData metaData = DBMetaContext.getInstance().getMetaData(jdbcKey);
         if (metaData == null) {
-            DBScanner scanner = new DBScanner(connection,info);
+            DBScanner scanner = new DBScanner(connection, info);
             metaData = scanner.loadMetadata();
             DBMetaContext.getInstance().update(metaData);
         }

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.codingapi.dbstream</groupId>
     <artifactId>dbstream-driver</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 
     <url>https://github.com/codingapi/dbstream-driver</url>
     <name>dbstream-driver</name>

@@ -28,6 +28,7 @@ public class SQLUpdateExecuteListener implements SQLExecuteListener {
                 Statement parserStatement = CCJSqlParserUtil.parse(sql);
                 Update update = (Update) parserStatement;
                 Table table = update.getTable();
+                executeState.updateMetaData(table.getName());
                 DbTable dbTable = executeState.getDbTable(table.getName());
                 if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
                     UpdateDBEventParser dataParser = new UpdateDBEventParser(executeState, update, table, dbTable);
