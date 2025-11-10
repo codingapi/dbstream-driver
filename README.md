@@ -3,7 +3,7 @@
 
 # dbstream-driver
 
-一个基于 JDBC 代理驱动的数据库变更事件推送框架，通过代理 JDBC 驱动实现监控数据库的持久化操作，自动捕获 INSERT/UPDATE/DELETE 操作并推送结构化数据变更事件。
+一个基于 JDBC 代理驱动的数据库变更事件推送框架，通过代理 JDBC 驱动实现监控数据库的持久化操作，自动捕获 INSERT/UPDATE/DELETE 操作并推送结构化数据变更事件。本框架支持JDK1.8及以上的java环境。
 
 ## ✨ 核心特性
 
