@@ -142,7 +142,8 @@ public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
     }
 }
 
-
+// 添加 SQL 表执行判断
+DBStreamContext.getInstance().setDbTableSupportProvider(new DefaultDBTableSupportProvider());
 ```
 
 根据表名等信息来决定是否进行数据事件解析。仅当返回true的才会进行事件推送。DefaultDBTableSupportProvider为默认的实现机制。
