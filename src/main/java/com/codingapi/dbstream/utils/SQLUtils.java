@@ -1,5 +1,7 @@
 package com.codingapi.dbstream.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +45,7 @@ public class SQLUtils {
         if (s.length() >= 2) {
             if ((s.startsWith("[") && s.endsWith("]"))
                     || (s.startsWith("\"") && s.endsWith("\""))
+                    || (s.startsWith("(") && s.endsWith(")"))
                     || (s.startsWith("`") && s.endsWith("`"))) {
                 return s.substring(1, s.length() - 1);
             }
@@ -66,6 +69,52 @@ public class SQLUtils {
             return m.group(1).trim();
         }
         return null;
+    }
+
+    public static List<String> parseValues(String sqlValues) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        boolean inString = false;
+        int parenDepth = 0;
+
+        for (int i = 0; i < sqlValues.length(); i++) {
+            char c = sqlValues.charAt(i);
+
+            if (c == '\'') {
+                // 切换字符串状态（需处理转义的单引号）
+                if (inString && i + 1 < sqlValues.length() && sqlValues.charAt(i + 1) == '\'') {
+                    // SQL转义 '' -> '
+                    current.append('\'');
+                    i++; // 跳过下一个引号
+                } else {
+                    inString = !inString;
+                    current.append(c);
+                }
+            } else if (!inString) {
+                if (c == '(') {
+                    parenDepth++;
+                    current.append(c);
+                } else if (c == ')') {
+                    parenDepth--;
+                    current.append(c);
+                } else if (c == ',' && parenDepth == 0) {
+                    // 只有在括号层为0时才分割
+                    result.add(current.toString().trim());
+                    current.setLength(0);
+                } else {
+                    current.append(c);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+
+        if (current.length() > 0) {
+            result.add(current.toString().trim());
+        }
+
+        return result;
     }
 
     /**

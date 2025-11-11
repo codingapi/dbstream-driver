@@ -46,17 +46,13 @@ public class DeleteDBEventParser   {
         String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
-        if(dbTable.hasPrimaryKeys()) {
-            for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-                if (this.aliasTable != null) {
-                    querySQL.append(this.aliasTable).append(".");
-                }
-                querySQL.append(dbColumn.getName()).append(",");
+        for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
+            if (this.aliasTable != null) {
+                querySQL.append(this.aliasTable).append(".");
             }
-            querySQL.deleteCharAt(querySQL.length() - 1);
-        }else {
-            querySQL.append(" * ");
+            querySQL.append(dbColumn.getName()).append(",");
         }
+        querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
         if (this.aliasTable != null) {
             querySQL.append(" AS ").append(aliasTable);

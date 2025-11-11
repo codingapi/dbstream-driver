@@ -1,8 +1,11 @@
 package com.codingapi.dbstream.sqlparser;
 
 import com.codingapi.dbstream.utils.SQLUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,24 +64,84 @@ public class InsertSQLParser {
     }
 
     /**
-     * 提取 SELECT 或 VALUES 后面的 SQL 内容（包含完整结构）
-     * 示例:
-     *   INSERT INTO user (id,name) SELECT id,name FROM other
-     *   → SELECT id,name FROM other
-     *
-     *   INSERT INTO user (id,name) VALUES (?,?)
-     *   → VALUES (?,?)
+     * 是否为默认的insert语句类型
+     * INSERT INTO user (id,name) VALUES (?,?)
      */
-    public String getSelectSQL() {
-        // 匹配 VALUES 或 SELECT 后面的内容
-        Pattern p = Pattern.compile("(?i)\\b(SELECT)\\b\\s+(.*)$", Pattern.DOTALL);
-        Matcher m = p.matcher(sql);
-        if (m.find()) {
-            String keyword = m.group(1).toUpperCase();
-            String rest = m.group(2).trim();
+    public boolean isDefaultInsertSQL() {
+        Pattern valuesPattern = Pattern.compile("(?i)\\b(VALUES)\\b\\s*(.*)$", Pattern.DOTALL);
+        Matcher valuesMatcher = valuesPattern.matcher(sql);
+        return valuesMatcher.find();
+    }
+
+    /**
+     * 提取 VALUES 或 SELECT 后面的 SQL 内容（包含完整结构）
+     * 示例:
+     * INSERT INTO user (id,name) SELECT id,name FROM other
+     * → SELECT id,name FROM other
+     * <p>
+     * INSERT INTO user (id,name) VALUES (?,?)
+     * → VALUES (?,?)
+     */
+    public String getValuesSQL() {
+
+        // 如果没有匹配到 SELECT，则尝试匹配 VALUES 部分
+        Pattern valuesPattern = Pattern.compile("(?i)\\b(VALUES)\\b\\s*(.*)$", Pattern.DOTALL);
+        Matcher valuesMatcher = valuesPattern.matcher(sql);
+        if (valuesMatcher.find()) {
+            return SQLUtils.stripQuotes(valuesMatcher.group(2).trim());
+        }
+
+        // 首先尝试匹配 SELECT 部分
+        Pattern selectPattern = Pattern.compile("(?i)\\b(SELECT)\\b\\s+(.*)$", Pattern.DOTALL);
+        Matcher selectMatcher = selectPattern.matcher(sql);
+        if (selectMatcher.find()) {
+            String keyword = selectMatcher.group(1).toUpperCase();
+            String rest = selectMatcher.group(2).trim();
             return keyword + " " + rest;
         }
+
         return null;
     }
+
+
+    public List<InsertValue> getValues(){
+        List<InsertValue> insertValues = new ArrayList<>();
+        List<String> values = SQLUtils.parseValues(this.getValuesSQL());
+        for(String value:values){
+            InsertValue insertValue = new InsertValue();
+            if(value.trim().equals("?")){
+                insertValue.setType(ValueType.JDBC);
+            }else if(SQLUtils.isSQLKeyword(value.trim()) || value.trim().startsWith("(")){
+                insertValue.setType(ValueType.SELECT);
+            }else {
+                insertValue.setType(ValueType.STATIC);
+            }
+            insertValue.setValue(value);
+            insertValues.add(insertValue);
+        }
+        return insertValues;
+    }
+
+    @Setter
+    @Getter
+    public static class InsertValue{
+        private ValueType type;
+        private String value;
+
+        public boolean isSelect(){
+            return ValueType.SELECT == this.type;
+        }
+
+        public boolean isJdbc(){
+            return ValueType.JDBC == this.type;
+        }
+    }
+
+    public static enum ValueType{
+        STATIC,
+        JDBC,
+        SELECT
+    }
+
 
 }

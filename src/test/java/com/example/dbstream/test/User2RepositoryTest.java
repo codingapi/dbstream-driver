@@ -151,4 +151,35 @@ class User2RepositoryTest {
         });
     }
 
+
+    /**
+     * 修改功能测试
+     */
+    @Test
+    @Transactional
+    @Rollback(false)
+    void test7() {
+//        User2 user = new User2();
+//        user.setId(7);
+//        user.setUsername("admin");
+//        user.setPassword("admin");
+//        user.setEmail("admin@example.com");
+//        user.setNickname("admin");
+//        userRepository.save(user);
+        userRepository.resetPasswordByUsername1("admin");
+    }
+
+
+
+    /**
+     * 修改功能测试
+     */
+    @Test
+    @Transactional
+    @Rollback(false)
+    void test8() {
+        userRepository.deleteAll();
+        userRepository.staticSave();
+    }
+
 }

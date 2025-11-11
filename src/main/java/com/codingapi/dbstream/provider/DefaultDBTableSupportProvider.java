@@ -8,9 +8,6 @@ public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
 
     @Override
     public boolean support(Properties info, DbTable dbTable) {
-        if (dbTable.hasColumns()) {
-            return true;
-        }
-        return false;
+        return true;
     }
 }

@@ -137,10 +137,8 @@ public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
 
     @Override
     public boolean support(Properties info, DbTable dbTable) {
-        if (dbTable.hasColumns()) {
-            return true;
-        }
-        return false;
+       // 所有表都会监听
+       return true;
     }
 }
 
@@ -244,10 +242,8 @@ mvn clean test -P travis
    - 手动事务模式下，事件会在 `commit()` 时批量推送
    - 事务回滚时，相关事件会被丢弃
 
-3. **SQL 限制**：
-   - 由于 JDBC 在执行 `INSERT INTO ... SELECT` 语句时无法获取自增 ID，框架暂不支持此类插入方式
-   - 请避免使用 `INSERT INTO ... SELECT` 语句
-   - 请避免对字段进行自增或自引用赋值。例如：`UPDATE set name = name+1 ` 语句
+3. **数据表限制**：
+   - 执行数据拦截事件的分析，要求表必须存在主键的定义
 
 4. **元数据缓存**：
    - 数据库元数据会在首次连接时自动扫描并缓存

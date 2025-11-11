@@ -21,7 +21,7 @@ public class UpdateDBEventParser {
     private final SQLExecuteState executeState;
     private final DbTable dbTable;
 
-    private final List<Map<String, Object>> prepareList = new ArrayList<>();
+    private List<Map<String, Object>> prepareList = new ArrayList<>();
 
 
     public UpdateDBEventParser(SQLExecuteState executeState, UpdateSQLParser sqlParser, DbTable dbTable) {
@@ -38,8 +38,7 @@ public class UpdateDBEventParser {
     private void updateRows() throws SQLException {
         String query = this.loadUpdateRowSQL();
         List<Object> params = this.loadUpdateRowParamList();
-        prepareList.clear();
-        prepareList.addAll(this.executeState.query(query, params));
+        prepareList = this.executeState.query(query, params);
     }
 
     private String loadUpdateRowSQL() {
@@ -47,17 +46,13 @@ public class UpdateDBEventParser {
         String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
-        if(dbTable.hasPrimaryKeys()) {
-            for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-                if (this.aliasTable != null) {
-                    querySQL.append(this.aliasTable).append(".");
-                }
-                querySQL.append(dbColumn.getName()).append(",");
+        for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
+            if (this.aliasTable != null) {
+                querySQL.append(this.aliasTable).append(".");
             }
-            querySQL.deleteCharAt(querySQL.length() - 1);
-        }else {
-            querySQL.append(" * ");
+            querySQL.append(dbColumn.getName()).append(",");
         }
+        querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
         if (this.aliasTable != null) {
             querySQL.append(" AS ").append(aliasTable);
@@ -70,7 +65,6 @@ public class UpdateDBEventParser {
         }
         return querySQL.toString();
     }
-
 
     private List<Object> loadUpdateRowParamList() {
         List<Object> params = new ArrayList<>();
@@ -96,35 +90,74 @@ public class UpdateDBEventParser {
     }
 
 
+    private List<Map<String,Object>> queryLatestData() throws SQLException{
+        String sql = this.latestSQL();
+        return this.executeState.query(sql,new ArrayList<>());
+    }
+
+
+    private String latestSQL(){
+        StringBuilder querySQL = new StringBuilder();
+        List<String> columns = new ArrayList<>();
+        columns.addAll(this.sqlParser.getColumnValues());
+        columns.addAll(this.dbTable.getPrimaryKeys());
+        querySQL.append("SELECT ");
+        querySQL.append(String.join(",",columns));
+        querySQL.append(" FROM ").append(this.dbTable.getName());
+        querySQL.append(" WHERE ");
+        for(String primaryKey:this.dbTable.getPrimaryKeys()) {
+            querySQL.append(" ").append(primaryKey);
+            querySQL.append(" IN (");
+            List<String> params = this.getPrimaryKeyStringValue(primaryKey);
+            querySQL.append(String.join(",", params));
+            querySQL.append(")");
+            querySQL.append(" AND ");
+        }
+        querySQL.append(" 1=1 ");
+        return querySQL.toString();
+    }
+
+
+    private List<String> getPrimaryKeyStringValue(String primaryKey){
+        List<String> params = new ArrayList<>();
+        for(Map<String,Object> data:this.prepareList){
+            for(String key:data.keySet()){
+                if(key.equalsIgnoreCase(primaryKey)){
+                    Object value = data.get(key);
+                    if(value instanceof String){
+                        params.add(String.format("'%s'", value));
+                    }else {
+                        params.add(data.get(key).toString());
+                    }
+                }
+            }
+        }
+        return params;
+    }
+
+
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
         if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
-        List<Object> updateParams = this.executeState.getListParams();
-        for (Map<String, Object> params : this.prepareList) {
+        // 根据id查询最新的数据
+        List<Map<String,Object>> latestData = this.queryLatestData();
+        for (Map<String, Object> params : latestData) {
             String jdbcUrl = this.executeState.getJdbcUrl();
             DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.UPDATE);
-            List<String> columns = this.sqlParser.getColumnValues();
-            for (int i = 0; i < columns.size(); i++) {
-                String column = columns.get(i);
-                Object value = updateParams.get(i);
-                DbColumn dbColumn = dbTable.getColumnByName(column);
-                if (dbColumn != null) {
-                    event.set(dbColumn.getName(), value);
-                }
-            }
-            for (String key : params.keySet()) {
-                DbColumn dbColumn = dbTable.getColumnByName(key);
-                if (dbColumn != null) {
-                    event.set(dbColumn.getName(), params.get(key));
-                    if(dbColumn.isPrimaryKey()) {
+            for(String column:params.keySet()){
+                DbColumn dbColumn = this.dbTable.getColumnByName(column);
+                if(dbColumn!=null){
+                    event.set(dbColumn.getName(),params.get(column));
+                    if(dbColumn.isPrimaryKey()){
                         event.addPrimaryKey(dbColumn.getName());
                     }
                 }
             }
             eventList.add(event);
         }
+
         return eventList;
     }
 }

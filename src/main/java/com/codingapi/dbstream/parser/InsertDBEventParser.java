@@ -11,6 +11,7 @@ import com.codingapi.dbstream.utils.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,122 +20,132 @@ public class InsertDBEventParser {
     private final InsertSQLParser sqlParser;
     private final SQLExecuteState executeState;
     private final DbTable dbTable;
-
-    private final List<Map<String, Object>> prepareList = new ArrayList<>();
+    private boolean defaultInsertSQL = true;
+    private List<Map<String, Object>> dataList = new ArrayList<>();
+    private final List<String> columns;
 
     public InsertDBEventParser(SQLExecuteState executeState, InsertSQLParser sqlParser, DbTable dbTable) {
         this.sqlParser = sqlParser;
         this.executeState = executeState;
         this.dbTable = dbTable;
+        this.columns = sqlParser.getColumnValues();
     }
 
     public List<DBEvent> loadEvents(Object result) throws SQLException {
-        List<DBEvent> eventList = new ArrayList<>();
         if (ResultSetUtils.isNotUpdatedRows(result)) {
-            return eventList;
+            return new ArrayList<>();
         }
-        if (this.prepareList.isEmpty()) {
-            eventList.addAll(this.loadDefaultInsertEvent());
-        } else {
-            System.err.println("INSERT INTO SELECT MODE CAN'T SUPPORT MULTIPLE EVENTS.");
-            System.err.println("<-----------WARNING-------------->");
-            System.err.println("SAVE DATA:" + this.prepareList);
-            System.err.println(">--------------------------------<");
-        }
-        return eventList;
+        return this.loadDataEvents();
     }
 
 
-    private void loadSelectPrepare() throws SQLException {
-        String query = sqlParser.getSelectSQL();
-        List<Object> params = this.loadUpdateRowParamList();
-        this.prepareList.clear();
-        this.prepareList.addAll(this.executeState.query(query, params));
-    }
-
-    private List<Object> loadUpdateRowParamList() {
-        List<Object> params = new ArrayList<>();
-        String nativeSQL = this.executeState.getSql();
-
-        int whereIndex = nativeSQL.toUpperCase().indexOf(" SELECT ");
-        String beforeSQL;
-        if (whereIndex > 0) {
-            beforeSQL = nativeSQL.substring(0, whereIndex);
-        } else {
-            beforeSQL = nativeSQL;
-        }
-
-        int paramsSize = SQLUtils.paramsCount(beforeSQL);
-
-        List<Object> paramsList = this.executeState.getListParams();
-        for (int i = 0; i < paramsList.size(); i++) {
-            if (i >= paramsSize) {
-                params.add(paramsList.get(i));
-            }
-        }
-        return params;
-    }
-
-
-    private List<DBEvent> loadDefaultInsertEvent() {
+    private List<DBEvent> loadDataEvents() {
         String jdbcUrl = this.executeState.getJdbcUrl();
         List<DBEvent> eventList = new ArrayList<>();
-        List<Map<String, Object>> primaryKeyValues = this.executeState.getStatementGenerateKeys(dbTable);
-        if(!primaryKeyValues.isEmpty()) {
-            for (Map<String, Object> map : primaryKeyValues) {
-                DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
-                List<Object> params = this.executeState.getListParams();
-                List<String> insertColumns = this.sqlParser.getColumnValues();
-                //主键
-                for (String key : map.keySet()) {
-                    DbColumn dbColumn = dbTable.getColumnByName(key);
-                    if (dbColumn.isPrimaryKey()) {
-                        event.addPrimaryKey(dbColumn.getName());
-                    }
-                    event.set(dbColumn.getName(), map.get(key));
-                }
+        List<Map<String, Object>> generateValues = this.executeState.getStatementGenerateKeys(dbTable);
 
-                //字段
-                for (int i = 0; i < params.size(); i++) {
-                    Object value = params.get(i);
-                    String column = insertColumns.get(i);
-                    DbColumn dbColumn = dbTable.getColumnByName(column);
-                    if (dbColumn != null && !dbColumn.isPrimaryKey()) {
-                        event.set(dbColumn.getName(), value);
-                    }
-                }
-                eventList.add(event);
-            }
-        }else {
+        // 插入拦截到的数据
+        for (Map<String, Object> data : dataList) {
             DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
-            List<Object> params = this.executeState.getListParams();
-            List<String> insertColumns = this.sqlParser.getColumnValues();
-            //字段
-            for (int i = 0; i < params.size(); i++) {
-                Object value = params.get(i);
-                String column = insertColumns.get(i);
-                DbColumn dbColumn = dbTable.getColumnByName(column);
+            for (String key : data.keySet()) {
+                DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {
-                    event.set(dbColumn.getName(), value);
-                    if(dbColumn.isPrimaryKey()){
+                    event.set(dbColumn.getName(), data.get(key));
+                    if (dbColumn.isPrimaryKey()) {
                         event.addPrimaryKey(dbColumn.getName());
                     }
                 }
             }
             eventList.add(event);
         }
+
+        // 放入自动生成的数据
+        if(!generateValues.isEmpty()) {
+            for(int i=0;i<generateValues.size();i++){
+                Map<String, Object> generateValue = generateValues.get(i);
+                DBEvent event  = eventList.get(i);
+                for (String key : generateValue.keySet()) {
+                    DbColumn dbColumn = dbTable.getColumnByName(key);
+                    if (dbColumn != null) {
+                        event.set(dbColumn.getName(), generateValue.get(key));
+                        if (dbColumn.isPrimaryKey()) {
+                            event.addPrimaryKey(dbColumn.getName());
+                        }
+                    }
+                }
+            }
+        }
+
         return eventList;
     }
 
+    private boolean isColumnPrimaryKey(String primaryKey) {
+        for (String column : columns) {
+            if (primaryKey.equalsIgnoreCase(column)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+
+    private boolean columnsHasPrimaryKeys() {
+        List<String> primaryKeys = this.dbTable.getPrimaryKeys();
+        for (String primaryKey : primaryKeys) {
+            if (!this.isColumnPrimaryKey(primaryKey)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
     public void prepare() throws SQLException {
-        String selectSQL = this.sqlParser.getSelectSQL();
-        if (selectSQL!=null) {
-            this.loadSelectPrepare();
+        this.defaultInsertSQL = this.sqlParser.isDefaultInsertSQL();
+        if (this.defaultInsertSQL) {
+            this.loadDefaultInsertDataList();
         } else {
-            prepareList.clear();
+            this.loadSelectInsertDataList();
         }
     }
+
+    private void loadSelectInsertDataList() throws SQLException {
+        String query = this.sqlParser.getValuesSQL();
+        int paramCount = SQLUtils.paramsCount(query);
+        List<Object> listParams = this.executeState.getListParams();
+        List<Object> queryParams = new ArrayList<>();
+        for (int i = 0; i < listParams.size(); i++) {
+            if (i + 1 >= paramCount) {
+                queryParams.add(listParams.get(i));
+            }
+        }
+        this.dataList = this.executeState.query(query, queryParams);
+    }
+
+    private void loadDefaultInsertDataList() throws SQLException {
+        List<InsertSQLParser.InsertValue> values = this.sqlParser.getValues();
+        Map<String, Object> data = new HashMap<>();
+        for (int i = 0; i < columns.size(); i++) {
+            String column = columns.get(i);
+            InsertSQLParser.InsertValue insertValue = values.get(i);
+            Object value = insertValue;
+
+            if (insertValue.isSelect()) {
+                List<Map<String, Object>> columValues = this.executeState.query(insertValue.getValue());
+                if (!columValues.isEmpty()) {
+                    Map<String, Object> first = columValues.get(0);
+                    for (String key : first.keySet()) {
+                        value = first.get(key);
+                    }
+                }
+            } else if (insertValue.isJdbc()) {
+                value = i + 1;
+            } else {
+                value = insertValue.getValue();
+            }
+            data.put(column, value);
+        }
+        dataList.add(data);
+    }
+
 }

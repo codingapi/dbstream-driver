@@ -51,7 +51,11 @@ public class DBStreamContext {
         if (dbTableSupportProvider == null) {
             this.dbTableSupportProvider = new DefaultDBTableSupportProvider();
         }
-        return dbTableSupportProvider.support(info, dbTable);
+        if (dbTable.hasColumns() && dbTable.hasPrimaryKeys()) {
+            return dbTableSupportProvider.support(info, dbTable);
+        } else {
+            return false;
+        }
     }
 
 

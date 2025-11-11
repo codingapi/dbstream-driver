@@ -1,3 +1,4 @@
-sql|table|columns|selectsql
-INSERT INTO user (id, name, age) VALUES (?, ?, ?)|user|id,name,age|
+sql|table|columns|values
+INSERT INTO user (id, name, age) VALUES (?, ?, ?)|user|id,name,age|?, ?, ?
 INSERT INTO `user_info`(uid, uname) SELECT id, name FROM old_user WHERE id>10|user_info|uid,uname|SELECT id, name FROM old_user WHERE id>10
+INSERT INTO m_user_2 (id,email,username,password,nickname) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM m_user_2),'123','123','123','123')|m_user_2|id,email,username,password,nickname|(SELECT COALESCE(MAX(id), 0) + 1 FROM m_user_2),'123','123','123','123'

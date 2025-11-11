@@ -167,6 +167,15 @@ public class SQLExecuteState {
 
     /**
      * 查询
+     * @param sql sql
+     * @return 查询结果
+     * @throws SQLException 查询异常
+     */
+    public List<Map<String, Object>> query(String sql) throws SQLException {
+        return this.query(sql,new ArrayList<>());
+    }
+    /**
+     * 查询
      *
      * @param sql    sql
      * @param params 参数
