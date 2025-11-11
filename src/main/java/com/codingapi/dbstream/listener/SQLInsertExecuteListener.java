@@ -4,9 +4,10 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.parser.InsertDBEventParser;
 import com.codingapi.dbstream.scanner.DbTable;
+import com.codingapi.dbstream.sqlparser.InsertSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.TransactionEventPools;
-import com.codingapi.dbstream.utils.SQLParamUtils;
+import com.codingapi.dbstream.utils.SQLUtils;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -22,16 +23,15 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
     @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         String sql = executeState.getSql();
-        if (SQLParamUtils.isInsertSQL(sql)) {
+        if (SQLUtils.isInsertSQL(sql)) {
             try {
                 threadLocal.remove();
-                Statement parserStatement = CCJSqlParserUtil.parse(sql);
-                Insert insert = (Insert) parserStatement;
-                Table table = insert.getTable();
-                executeState.updateMetaData(table.getName());
-                DbTable dbTable = executeState.getDbTable(table.getName());
+                InsertSQLParser sqlParser = new InsertSQLParser(sql);
+                String tableName = sqlParser.getTableName();
+                executeState.updateMetaData(tableName);
+                DbTable dbTable = executeState.getDbTable(tableName);
                 if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
-                    InsertDBEventParser dataParser = new InsertDBEventParser(executeState, insert, table, dbTable);
+                    InsertDBEventParser dataParser = new InsertDBEventParser(executeState, sqlParser, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);
                 }
@@ -46,7 +46,7 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         String sql = executeState.getSql();
         String transactionKey = executeState.getTransactionKey();
-        if (SQLParamUtils.isInsertSQL(sql)) {
+        if (SQLUtils.isInsertSQL(sql)) {
             InsertDBEventParser dataParser = threadLocal.get();
             if (dataParser != null) {
                 List<DBEvent> eventList = dataParser.loadEvents(result);

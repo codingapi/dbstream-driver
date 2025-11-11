@@ -3,40 +3,34 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
+import com.codingapi.dbstream.sqlparser.InsertSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
-import com.codingapi.dbstream.utils.SQLParamUtils;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.JdbcParameter;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.Values;
+import com.codingapi.dbstream.utils.ResultSetUtils;
+import com.codingapi.dbstream.utils.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InsertDBEventParser extends DBEventParser {
+public class InsertDBEventParser {
 
-    private final Insert insert;
+    private final InsertSQLParser sqlParser;
+    private final SQLExecuteState executeState;
+    private final DbTable dbTable;
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
-    public InsertDBEventParser(SQLExecuteState executeState, Statement statement, Table table, DbTable dbTable) {
-        super(executeState, statement, table, dbTable);
-        this.insert = (Insert) statement;
+    public InsertDBEventParser(SQLExecuteState executeState, InsertSQLParser sqlParser, DbTable dbTable) {
+        this.sqlParser = sqlParser;
+        this.executeState = executeState;
+        this.dbTable = dbTable;
     }
 
-    @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
-        if (SQLParamUtils.isNotUpdatedRows(result)) {
+        if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
         if (this.prepareList.isEmpty()) {
@@ -51,8 +45,8 @@ public class InsertDBEventParser extends DBEventParser {
     }
 
 
-    private void loadSelectPrepare(PlainSelect select) throws SQLException {
-        String query = select.toString();
+    private void loadSelectPrepare() throws SQLException {
+        String query = sqlParser.getSelectSQL();
         List<Object> params = this.loadUpdateRowParamList();
         this.prepareList.clear();
         this.prepareList.addAll(this.executeState.query(query, params));
@@ -62,7 +56,7 @@ public class InsertDBEventParser extends DBEventParser {
         List<Object> params = new ArrayList<>();
         String nativeSQL = this.executeState.getSql();
 
-        int whereIndex = nativeSQL.toLowerCase().indexOf(" select ");
+        int whereIndex = nativeSQL.toUpperCase().indexOf(" SELECT ");
         String beforeSQL;
         if (whereIndex > 0) {
             beforeSQL = nativeSQL.substring(0, whereIndex);
@@ -70,7 +64,7 @@ public class InsertDBEventParser extends DBEventParser {
             beforeSQL = nativeSQL;
         }
 
-        int paramsSize = SQLParamUtils.paramsCount(beforeSQL);
+        int paramsSize = SQLUtils.paramsCount(beforeSQL);
 
         List<Object> paramsList = this.executeState.getListParams();
         for (int i = 0; i < paramsList.size(); i++) {
@@ -89,7 +83,7 @@ public class InsertDBEventParser extends DBEventParser {
         for (Map<String, Object> map : primaryKeyValues) {
             DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
             List<Object> params = this.executeState.getListParams();
-            List<String> insertColumns = this.loadInsertColumns();
+            List<String> insertColumns = this.sqlParser.getColumnValues();
             //主键
             for (String key : map.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
@@ -114,26 +108,12 @@ public class InsertDBEventParser extends DBEventParser {
     }
 
 
-    private List<String> loadInsertColumns() {
-        ExpressionList<?> values = this.insert.getValues().getExpressions();
-        ExpressionList<Column> columns = this.insert.getColumns();
-        List<String> columnList = new ArrayList<>();
-        for (int i = 0; i < columns.size(); i++) {
-            Column column = columns.get(i);
-            Expression expression = values.get(i);
-            if (expression instanceof JdbcParameter) {
-                columnList.add(column.getColumnName());
-            }
-        }
-        return columnList;
-    }
 
 
-    @Override
     public void prepare() throws SQLException {
-        Select select = this.insert.getSelect();
-        if (select instanceof PlainSelect) {
-            this.loadSelectPrepare((PlainSelect) select);
+        String selectSQL = this.sqlParser.getSelectSQL();
+        if (selectSQL!=null) {
+            this.loadSelectPrepare();
         } else {
             prepareList.clear();
         }

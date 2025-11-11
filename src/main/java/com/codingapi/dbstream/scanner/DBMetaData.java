@@ -1,7 +1,7 @@
 package com.codingapi.dbstream.scanner;
 
 import com.codingapi.dbstream.utils.DBTableSerializableHelper;
-import com.codingapi.dbstream.utils.SHA256Util;
+import com.codingapi.dbstream.utils.SHA256Utils;
 import lombok.Getter;
 
 import java.util.*;
@@ -26,7 +26,7 @@ public class DBMetaData {
     private String generateKey(String schema) {
         String jdbcUrl = this.getJdbcUrl();
         String data = String.format("%s#%s", jdbcUrl, schema == null ? "" : schema);
-        return SHA256Util.sha256(data);
+        return SHA256Utils.sha256(data);
     }
 
     /**

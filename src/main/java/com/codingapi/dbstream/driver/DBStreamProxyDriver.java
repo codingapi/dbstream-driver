@@ -19,10 +19,15 @@ public class DBStreamProxyDriver implements Driver {
     private Driver driver;
 
     static {
+        try {
+            DriverManager.registerDriver(new DBStreamProxyDriver());
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
         SQLRunningContext.getInstance().addListener(new SQLDeleteExecuteListener());
         SQLRunningContext.getInstance().addListener(new SQLInsertExecuteListener());
         SQLRunningContext.getInstance().addListener(new SQLUpdateExecuteListener());
-        System.out.println("DBStreamProxyDriver init...");
+        System.out.println("DBStreamProxyDriver init register...");
     }
 
     @Override

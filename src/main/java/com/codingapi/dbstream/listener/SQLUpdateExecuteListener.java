@@ -4,13 +4,10 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.parser.UpdateDBEventParser;
 import com.codingapi.dbstream.scanner.DbTable;
+import com.codingapi.dbstream.sqlparser.UpdateSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.TransactionEventPools;
-import com.codingapi.dbstream.utils.SQLParamUtils;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.update.Update;
+import com.codingapi.dbstream.utils.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -22,16 +19,15 @@ public class SQLUpdateExecuteListener implements SQLExecuteListener {
     @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         String sql = executeState.getSql();
-        if (SQLParamUtils.isUpdateSQL(sql)) {
+        if (SQLUtils.isUpdateSQL(sql)) {
             try {
                 threadLocal.remove();
-                Statement parserStatement = CCJSqlParserUtil.parse(sql);
-                Update update = (Update) parserStatement;
-                Table table = update.getTable();
-                executeState.updateMetaData(table.getName());
-                DbTable dbTable = executeState.getDbTable(table.getName());
+                UpdateSQLParser sqlParser = new UpdateSQLParser(sql);
+                String tableName = sqlParser.getTableName();
+                executeState.updateMetaData(tableName);
+                DbTable dbTable = executeState.getDbTable(tableName);
                 if (dbTable != null && DBStreamContext.getInstance().support(executeState.getDriverProperties(), dbTable)) {
-                    UpdateDBEventParser dataParser = new UpdateDBEventParser(executeState, update, table, dbTable);
+                    UpdateDBEventParser dataParser = new UpdateDBEventParser(executeState, sqlParser, dbTable);
                     dataParser.prepare();
                     threadLocal.set(dataParser);
                 }
@@ -48,7 +44,7 @@ public class SQLUpdateExecuteListener implements SQLExecuteListener {
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         String sql = executeState.getSql();
         String transactionKey = executeState.getTransactionKey();
-        if (SQLParamUtils.isUpdateSQL(sql)) {
+        if (SQLUtils.isUpdateSQL(sql)) {
             UpdateDBEventParser dataParser = threadLocal.get();
             if (dataParser != null) {
                 List<DBEvent> eventList = dataParser.loadEvents(result);

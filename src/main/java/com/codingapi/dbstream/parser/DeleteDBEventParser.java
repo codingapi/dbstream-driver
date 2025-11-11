@@ -3,39 +3,33 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
+import com.codingapi.dbstream.sqlparser.DeleteSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
-import com.codingapi.dbstream.utils.SQLParamUtils;
-import net.sf.jsqlparser.expression.Alias;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.delete.Delete;
+import com.codingapi.dbstream.utils.ResultSetUtils;
+import com.codingapi.dbstream.utils.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteDBEventParser extends DBEventParser {
+public class DeleteDBEventParser   {
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
     private final String aliasTable;
-    private final Delete delete;
+    private final DeleteSQLParser sqlParser;
+    private final SQLExecuteState executeState;
+    private final DbTable dbTable;
 
-    public DeleteDBEventParser(SQLExecuteState executeState, Statement statement, Table table, DbTable dbTable) {
-        super(executeState, statement, table, dbTable);
-        this.delete = (Delete) statement;
-        Alias alias = table.getAlias();
-        if (alias != null) {
-            this.aliasTable = alias.getName();
-        } else {
-            this.aliasTable = null;
-        }
+    public DeleteDBEventParser(SQLExecuteState executeState, DeleteSQLParser sqlParser, DbTable dbTable) {
+        this.sqlParser = sqlParser;
+        this.dbTable = dbTable;
+        this.executeState = executeState;
+        this.aliasTable = sqlParser.getTableAlias();
     }
 
-    @Override
     public void prepare() throws SQLException {
         this.updateRows();
     }
@@ -48,24 +42,28 @@ public class DeleteDBEventParser extends DBEventParser {
     }
 
     private String loadUpdateRowSQL() {
-        Expression expression = this.delete.getWhere();
+        String whereSQL = this.sqlParser.getWhereSQL();
         String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
-        for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-            if (this.aliasTable != null) {
-                querySQL.append(this.aliasTable).append(".");
+        if(dbTable.hasPrimaryKeys()) {
+            for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
+                if (this.aliasTable != null) {
+                    querySQL.append(this.aliasTable).append(".");
+                }
+                querySQL.append(dbColumn.getName()).append(",");
             }
-            querySQL.append(dbColumn.getName()).append(",");
+            querySQL.deleteCharAt(querySQL.length() - 1);
+        }else {
+            querySQL.append(" * ");
         }
-        querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
         if (this.aliasTable != null) {
             querySQL.append(" AS ").append(aliasTable);
         }
         querySQL.append(" WHERE ");
-        if (expression != null) {
-            querySQL.append(expression);
+        if (whereSQL != null) {
+            querySQL.append(whereSQL);
         } else {
             querySQL.append(" 1=1 ");
         }
@@ -77,7 +75,7 @@ public class DeleteDBEventParser extends DBEventParser {
         List<Object> params = new ArrayList<>();
         String nativeSQL = this.executeState.getSql();
 
-        int whereIndex = nativeSQL.toLowerCase().indexOf(" where ");
+        int whereIndex = nativeSQL.toUpperCase().indexOf(" WHERE ");
         String beforeSQL;
         if (whereIndex > 0) {
             beforeSQL = nativeSQL.substring(0, whereIndex);
@@ -85,7 +83,7 @@ public class DeleteDBEventParser extends DBEventParser {
             beforeSQL = nativeSQL;
         }
 
-        int paramsSize = SQLParamUtils.paramsCount(beforeSQL);
+        int paramsSize = SQLUtils.paramsCount(beforeSQL);
 
         List<Object> paramsList = this.executeState.getListParams();
         for (int i = 0; i < paramsList.size(); i++) {
@@ -97,15 +95,14 @@ public class DeleteDBEventParser extends DBEventParser {
     }
 
 
-    @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
-        if (SQLParamUtils.isNotUpdatedRows(result)) {
+        if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
         for (Map<String, Object> params : this.prepareList) {
             String jdbcUrl = this.executeState.getJdbcUrl();
-            DBEvent event = new DBEvent(jdbcUrl, this.table.getName(), EventType.DELETE);
+            DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.DELETE);
             for (String key : params.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {

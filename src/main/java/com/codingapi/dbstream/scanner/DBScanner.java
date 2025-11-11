@@ -60,6 +60,7 @@ public class DBScanner {
             tableInfo.addPrimaryKey(pkColumn);
         }
         pkRs.close();
+        System.out.println(tableName+" PrimaryKeys:" + tableInfo.getPrimaryKeys());
         tableInfo.reloadPrimaryColumns();
 
         dbTableSerializableHelper.serialize(tableInfo);
@@ -69,10 +70,6 @@ public class DBScanner {
      * 扫描数据库中的所有表、字段和主键信息
      */
     public DBMetaData loadMetadata() throws SQLException {
-        if (!this.dbMetaData.isEmpty()) {
-            return dbMetaData;
-        }
-
         DatabaseMetaData metaData = connection.getMetaData();
         String catalog = connection.getCatalog();
         String schema = connection.getSchema();

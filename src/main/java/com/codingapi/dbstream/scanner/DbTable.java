@@ -24,6 +24,9 @@ public class DbTable implements Serializable {
      * 加载主键的字段
      */
     public void reloadPrimaryColumns() {
+        if(this.primaryKeys.isEmpty()){
+            return;
+        }
         for (DbColumn column : columns) {
             column.setPrimaryKey(this.primaryKeys.contains(column.getName()));
             if (column.isPrimaryKey()) {
