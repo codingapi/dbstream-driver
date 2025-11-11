@@ -160,6 +160,22 @@ jdbcKey是通过sha256(jdbcUrl+schema)计算得来。
 
 ```
 
+### 7. 主键关系手动维护（可选）
+
+在数据库中存在不存在物理的主键字段，但是存在业务主键字段，可通过手动配置的方式，手动标记字段为主键字段。在扫描后的配置文件下增加对应表名的.key文件，例如：M_USER.key
+```
+.
+└── beefae7e00deb825a3a591ab7a22791a4df799afba9fed71f8b549665508c7ee
+    ├── M_USER
+    ├── M_USER.key
+    └── M_USER_2
+```
+
+写法如下，填写字段的名称，多个用英文,分割。
+```
+USERNAME,ID
+```
+
 ## 📖 API 文档
 
 ### DBStreamContext

@@ -41,7 +41,9 @@ public class DbTable implements Serializable {
 
 
     public void addPrimaryKey(String key) {
-        this.primaryKeys.add(key);
+        if(!this.primaryKeys.contains(key)) {
+            this.primaryKeys.add(key);
+        }
     }
 
     public boolean hasColumns() {
@@ -74,5 +76,16 @@ public class DbTable implements Serializable {
     public void setPrimaryKeys(List<String> primaryKeys) {
         this.primaryKeys.clear();
         this.primaryKeys.addAll(primaryKeys);
+    }
+
+    public void loadLocalPrimaryKeys(List<String> primaryKeys) {
+        if(primaryKeys!=null && !primaryKeys.isEmpty()){
+            for(String primaryKey:primaryKeys){
+                DbColumn column = this.getColumnByName(primaryKey);
+                if(column!=null){
+                    this.addPrimaryKey(column.getName());
+                }
+            }
+        }
     }
 }

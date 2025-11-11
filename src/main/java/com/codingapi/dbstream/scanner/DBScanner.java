@@ -32,10 +32,12 @@ public class DBScanner {
 
     private void loadDbTableInfo(String tableName, DbTable tableInfo) throws SQLException {
         String dbTableName = tableInfo.getName();
+        List<String> keys = dbTableSerializableHelper.loadPrimaryKeyByLocalFile(tableInfo.getName());
         if (dbTableSerializableHelper.hasSerialize(dbTableName)) {
             DbTable dbTableCache = dbTableSerializableHelper.deserialize(dbTableName);
             tableInfo.setColumns(dbTableCache.getColumns());
             tableInfo.setPrimaryKeys(dbTableCache.getPrimaryKeys());
+            tableInfo.loadLocalPrimaryKeys(keys);
             tableInfo.reloadPrimaryColumns();
             return;
         }
@@ -60,6 +62,7 @@ public class DBScanner {
             tableInfo.addPrimaryKey(pkColumn);
         }
         pkRs.close();
+        tableInfo.loadLocalPrimaryKeys(keys);
         tableInfo.reloadPrimaryColumns();
 
         dbTableSerializableHelper.serialize(tableInfo);
