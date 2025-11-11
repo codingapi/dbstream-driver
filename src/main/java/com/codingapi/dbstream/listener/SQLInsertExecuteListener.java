@@ -17,6 +17,11 @@ public class SQLInsertExecuteListener implements SQLExecuteListener {
     private final static ThreadLocal<InsertDBEventParser> threadLocal = new ThreadLocal<>();
 
     @Override
+    public int order() {
+        return 100;
+    }
+
+    @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         String sql = executeState.getSql();
         if (SQLUtils.isInsertSQL(sql)) {

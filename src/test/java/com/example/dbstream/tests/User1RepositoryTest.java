@@ -14,9 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
@@ -24,6 +25,7 @@ class User1RepositoryTest {
 
     @Autowired
     private User1Repository userRepository;
+
 
     @BeforeEach
     void setUp() {
@@ -162,6 +164,40 @@ class User1RepositoryTest {
             int result = 100 / 0;
             System.out.println(result);
         });
+    }
+
+    /**
+     * 异常回滚测试
+     */
+    @Test
+    @Transactional
+    @Rollback(false)
+    void test8() {
+
+        DBStreamContext.getInstance().addListener(new MySQLListener());
+
+        List<User1> list = new ArrayList<>();
+
+
+        for (int i=0;i<10;i++){
+            User1 user1 = new User1();
+            user1.setUsername("admin1");
+            user1.setPassword("admin1");
+            user1.setEmail("admin1@example.com");
+            user1.setNickname("admin1");
+            list.add(user1);
+
+            User1 user2 = new User1();
+            user2.setUsername("admin2");
+            user2.setPassword("admin2");
+            user2.setEmail("admin2@example.com");
+            user2.setNickname("admin2");
+            list.add(user2);
+        }
+
+        userRepository.saveAll(list);
+
+
     }
 
 }

@@ -10,6 +10,11 @@ import java.sql.SQLException;
 public class MySQLListener implements SQLExecuteListener {
 
     @Override
+    public int order() {
+        return 0;
+    }
+
+    @Override
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         log.info("after sql:{},params:{},execute timestamp:{}", executeState.getSql(), executeState.getListParams(), executeState.getExecuteTimestamp());
     }

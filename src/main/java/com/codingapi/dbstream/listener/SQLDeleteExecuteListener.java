@@ -17,6 +17,11 @@ public class SQLDeleteExecuteListener implements SQLExecuteListener {
     private final static ThreadLocal<DeleteDBEventParser> threadLocal = new ThreadLocal<>();
 
     @Override
+    public int order() {
+        return 100;
+    }
+
+    @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         String sql = executeState.getSql();
         if (SQLUtils.isDeleteSQL(sql)) {

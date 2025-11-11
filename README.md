@@ -106,6 +106,12 @@ import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
 
 public class MySQLListener implements SQLExecuteListener {
+
+    @Override
+    public int order() {
+        return 0;
+    }
+    
     @Override
     public void before(SQLExecuteState executeState) {
         System.out.println("执行前 - SQL: " + executeState.getSql());
@@ -258,8 +264,9 @@ mvn clean test -P travis
    - 手动事务模式下，事件会在 `commit()` 时批量推送
    - 事务回滚时，相关事件会被丢弃
 
-3. **数据表限制**：
-   - 执行数据拦截事件的分析，要求表必须存在主键的定义
+3. **使用场景限制**：
+   - 数据库表必须有主键的定义，在DELETE事件需要明确主键信息，主键物理表不存在时可通过外部key文件配置的方式添加。
+   - 若INSERT INTO SELECT 语句中，采用主键自增模式，受限于JDBC的支持将无法解析到自增ID，建议修改单条保存或修改ID为手动传递。
 
 4. **元数据缓存**：
    - 数据库元数据会在首次连接时自动扫描并缓存
