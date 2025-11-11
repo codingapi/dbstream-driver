@@ -13,6 +13,7 @@ import java.util.concurrent.Executor;
 
 public class ConnectionProxy implements Connection {
 
+    @Getter
     private final Connection connection;
     private final DBMetaData metaData;
 

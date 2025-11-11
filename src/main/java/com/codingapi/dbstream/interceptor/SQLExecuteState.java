@@ -20,7 +20,7 @@ public class SQLExecuteState {
      * SQL参数,integer index模式
      */
     @Getter
-    private final List<Object> listParams;
+    private final Map<Integer,Object> indexParams;
     /**
      * SQL参数,string key 模型
      */
@@ -51,7 +51,7 @@ public class SQLExecuteState {
      * 数据库的当前链接对象
      */
     @Getter
-    private final ConnectionProxy connection;
+    private final ConnectionProxy connectionProxy;
 
     /**
      * sql执行结果
@@ -73,13 +73,13 @@ public class SQLExecuteState {
     private long afterTimestamp;
 
 
-    public SQLExecuteState(String sql, ConnectionProxy connection, Statement statement, DBMetaData metaData) {
+    public SQLExecuteState(String sql, ConnectionProxy connectionProxy, Statement statement, DBMetaData metaData) {
         this.sql = sql;
-        this.connection = connection;
+        this.connectionProxy = connectionProxy;
         this.statement = statement;
         this.metaData = metaData;
 
-        this.listParams = new ArrayList<>();
+        this.indexParams = new HashMap<>();
         this.mapParams = new HashMap<>();
     }
 
@@ -124,7 +124,24 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(int index, Object value) {
-        listParams.add(index - 1, value);
+        indexParams.put(index, value);
+    }
+
+    /**
+     * 获取参数列表
+     * @return List
+     */
+    public List<Object> getListParams(){
+        List<Object> list = new ArrayList<>();
+        if (indexParams.isEmpty()) {
+            return list;
+        }
+        List<Integer> keys = new ArrayList<>(indexParams.keySet());
+        Collections.sort(keys);
+        for(Integer key: keys){
+            list.add(indexParams.get(key));
+        }
+        return list;
     }
 
 
@@ -142,8 +159,8 @@ public class SQLExecuteState {
      * 获取事务标识信息
      */
     public String getTransactionKey() {
-        if (this.connection != null) {
-            return this.connection.getTransactionKey();
+        if (this.connectionProxy != null) {
+            return this.connectionProxy.getTransactionKey();
         }
         return null;
     }
@@ -157,7 +174,7 @@ public class SQLExecuteState {
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql, List<Object> params) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        PreparedStatement preparedStatement = connectionProxy.getConnection().prepareStatement(sql);
         for (int i = 0; i < params.size(); i++) {
             Object param = params.get(i);
             preparedStatement.setObject(i + 1, param);
@@ -235,7 +252,7 @@ public class SQLExecuteState {
     public void updateMetaData(String tableName) throws SQLException {
         // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
         if (this.metaData.isUpdateTableMeta(tableName)) {
-            DBScanner dbScanner = new DBScanner(connection, getDriverProperties());
+            DBScanner dbScanner = new DBScanner(connectionProxy.getConnection(), getDriverProperties());
             dbScanner.updateMetadata(this.metaData);
         }
     }
