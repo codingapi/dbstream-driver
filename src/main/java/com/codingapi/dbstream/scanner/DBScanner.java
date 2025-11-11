@@ -1,6 +1,6 @@
 package com.codingapi.dbstream.scanner;
 
-import com.codingapi.dbstream.utils.DBTableSerializableHelper;
+import com.codingapi.dbstream.serializable.DBTableSerializableHelper;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

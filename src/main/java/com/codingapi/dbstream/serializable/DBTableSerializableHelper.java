@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.utils;
+package com.codingapi.dbstream.serializable;
 
 import com.codingapi.dbstream.scanner.DbTable;
 
