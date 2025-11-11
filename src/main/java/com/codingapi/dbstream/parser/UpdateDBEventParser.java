@@ -118,7 +118,9 @@ public class UpdateDBEventParser {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {
                     event.set(dbColumn.getName(), params.get(key));
-                    event.addPrimaryKey(dbColumn.getName());
+                    if(dbColumn.isPrimaryKey()) {
+                        event.addPrimaryKey(dbColumn.getName());
+                    }
                 }
             }
             eventList.add(event);

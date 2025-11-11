@@ -4,9 +4,9 @@ package com.example.dbstream.test;
 import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.DBEventPusher;
-import com.example.dbstream.entity.User;
+import com.example.dbstream.entity.User2;
 import com.example.dbstream.listener.MySQLListener;
-import com.example.dbstream.repository.UserRepository;
+import com.example.dbstream.repository.User2Repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,24 +16,14 @@ import org.springframework.test.annotation.Rollback;
 import javax.transaction.Transactional;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
-class ExampleApplicationTest {
+class User2RepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @BeforeEach
-    void setUp() {
-        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
-            @Override
-            public void push(List<DBEvent> events) {
-                System.out.println(events);
-            }
-        });
-    }
+    private User2Repository userRepository;
 
     /**
      * 常用操作测试
@@ -45,7 +35,8 @@ class ExampleApplicationTest {
         DBStreamContext.getInstance().addListener(new MySQLListener());
 
         userRepository.deleteAll();
-        User user = new User();
+        User2 user = new User2();
+        user.setId(1);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");
@@ -62,7 +53,7 @@ class ExampleApplicationTest {
         int updateRows = userRepository.resetPassword("admin");
         System.out.println("updateRows:" + updateRows);
 
-        User current = userRepository.getUserById(user.getId());
+        User2 current = userRepository.getUserById(user.getId());
         System.out.println("current:" + current);
 
         int deleteRows = userRepository.deleteByUsername("admin");
@@ -78,13 +69,16 @@ class ExampleApplicationTest {
     @Transactional
     @Rollback(false)
     void test2() {
-        User user = new User();
+        userRepository.deleteAll();
+        User2 user = new User2();
+        user.setId(2);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");
         user.setNickname("admin");
 
         userRepository.save(user);
+        userRepository.deleteAll();
     }
 
 
@@ -105,7 +99,8 @@ class ExampleApplicationTest {
     @Transactional
     @Rollback(false)
     void test4() {
-        User user = new User();
+        User2 user = new User2();
+        user.setId(4);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");
@@ -122,7 +117,8 @@ class ExampleApplicationTest {
     @Transactional
     @Rollback(false)
     void test5() {
-        User user = new User();
+        User2 user = new User2();
+        user.setId(5);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");
@@ -134,24 +130,15 @@ class ExampleApplicationTest {
     }
 
 
-    /**
-     * insert into select 测试
-     */
-    @Test
-    @Transactional
-    @Rollback(false)
-    void test6() {
-        userRepository.insertIntoFromSelect();
-    }
-
 
     /**
      * 异常回滚测试
      */
     @Test
     @Transactional
-    void test7() {
-        User user = new User();
+    void test6() {
+        User2 user = new User2();
+        user.setId(6);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");

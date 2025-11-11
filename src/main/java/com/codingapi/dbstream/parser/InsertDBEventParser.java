@@ -80,26 +80,45 @@ public class InsertDBEventParser {
         String jdbcUrl = this.executeState.getJdbcUrl();
         List<DBEvent> eventList = new ArrayList<>();
         List<Map<String, Object>> primaryKeyValues = this.executeState.getStatementGenerateKeys(dbTable);
-        for (Map<String, Object> map : primaryKeyValues) {
+        if(!primaryKeyValues.isEmpty()) {
+            for (Map<String, Object> map : primaryKeyValues) {
+                DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
+                List<Object> params = this.executeState.getListParams();
+                List<String> insertColumns = this.sqlParser.getColumnValues();
+                //主键
+                for (String key : map.keySet()) {
+                    DbColumn dbColumn = dbTable.getColumnByName(key);
+                    if (dbColumn.isPrimaryKey()) {
+                        event.addPrimaryKey(dbColumn.getName());
+                    }
+                    event.set(dbColumn.getName(), map.get(key));
+                }
+
+                //字段
+                for (int i = 0; i < params.size(); i++) {
+                    Object value = params.get(i);
+                    String column = insertColumns.get(i);
+                    DbColumn dbColumn = dbTable.getColumnByName(column);
+                    if (dbColumn != null && !dbColumn.isPrimaryKey()) {
+                        event.set(dbColumn.getName(), value);
+                    }
+                }
+                eventList.add(event);
+            }
+        }else {
             DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
             List<Object> params = this.executeState.getListParams();
             List<String> insertColumns = this.sqlParser.getColumnValues();
-            //主键
-            for (String key : map.keySet()) {
-                DbColumn dbColumn = dbTable.getColumnByName(key);
-                if (dbColumn.isPrimaryKey()) {
-                    event.addPrimaryKey(dbColumn.getName());
-                }
-                event.set(dbColumn.getName(), map.get(key));
-            }
-
             //字段
             for (int i = 0; i < params.size(); i++) {
                 Object value = params.get(i);
                 String column = insertColumns.get(i);
                 DbColumn dbColumn = dbTable.getColumnByName(column);
-                if (dbColumn != null && !dbColumn.isPrimaryKey()) {
+                if (dbColumn != null) {
                     event.set(dbColumn.getName(), value);
+                    if(dbColumn.isPrimaryKey()){
+                        event.addPrimaryKey(dbColumn.getName());
+                    }
                 }
             }
             eventList.add(event);

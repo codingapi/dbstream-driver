@@ -8,10 +8,6 @@ import com.codingapi.dbstream.sqlparser.InsertSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.TransactionEventPools;
 import com.codingapi.dbstream.utils.SQLUtils;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.insert.Insert;
 
 import java.sql.SQLException;
 import java.util.List;

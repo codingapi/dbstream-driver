@@ -137,7 +137,7 @@ public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
 
     @Override
     public boolean support(Properties info, DbTable dbTable) {
-        if (dbTable.hasColumns() && dbTable.hasPrimaryKeys()) {
+        if (dbTable.hasColumns()) {
             return true;
         }
         return false;
@@ -151,7 +151,7 @@ public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
 
 ### 6. 查看表或情况表缓存数据（可选）
 
-在项目启动以后，会在项目的根路径下创建dbstream文件夹，文件夹中存储的内容为数据库的表扫描缓存数据。  
+在项目启动以后，会在项目的根路径下创建.dbstream文件夹，文件夹中存储的内容为数据库的表扫描缓存数据。  
 文件夹的名称为jdbcKey的字段，文件夹下的内容为缓存的表结构信息，当表结构发生变化以后可以删除对应的文件进行更新。  
 也可以在系统中通过执行 `DBStreamContext.getInstance().clear(String jdbcKey);`进行情况数据。   
 jdbcKey是通过sha256(jdbcUrl+schema)计算得来。
@@ -247,10 +247,11 @@ mvn clean test -P travis
 3. **SQL 限制**：
    - 由于 JDBC 在执行 `INSERT INTO ... SELECT` 语句时无法获取自增 ID，框架暂不支持此类插入方式
    - 请避免使用 `INSERT INTO ... SELECT` 语句
+   - 请避免对字段进行自增或自引用赋值。例如：`UPDATE set name = name+1 ` 语句
 
 4. **元数据缓存**：
    - 数据库元数据会在首次连接时自动扫描并缓存
-   - 如果数据库表结构发生变化，可以调用 `clear()` 方法清理缓存，下次访问时会自动重新加载
+   - 如果数据库表结构发生变化，可以调用 `clear()`或`metaData.addUpdateTableMateList(String tableName);` 方法清理缓存，下次访问时会自动重新加载
 
 ## 📄 许可证
 
@@ -259,24 +260,6 @@ mvn clean test -P travis
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
-
-## QA
-
-Q: 如果存在com.github.jsqlparser冲突问题，可以在maven配置中忽略掉  
-A：maven配置如下  
-```
- <dependency>
-    <groupId>com.codingapi.dbstream</groupId>
-    <artifactId>dbstream-driver</artifactId>
-    <version>${latest.version}</version>
-    <exclusions>
-        <exclusion>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-```
 
 
 ## 📞 联系方式
