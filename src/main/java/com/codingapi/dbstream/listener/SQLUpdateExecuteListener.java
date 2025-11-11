@@ -17,6 +17,11 @@ public class SQLUpdateExecuteListener implements SQLExecuteListener {
     private final static ThreadLocal<UpdateDBEventParser> threadLocal = new ThreadLocal<>();
 
     @Override
+    public int order() {
+        return 100;
+    }
+
+    @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         String sql = executeState.getSql();
         if (SQLUtils.isUpdateSQL(sql)) {

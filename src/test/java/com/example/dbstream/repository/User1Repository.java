@@ -25,7 +25,11 @@ public interface User1Repository extends JpaRepository<User1, Long> {
     int counts();
 
     @Modifying
+    @Query("delete from User1 where id > ?1")
+    int clearData(long id);
+
+    @Modifying
     @Query("insert into User1(email,username,password,nickname) select u.email,u.username,u.password,u.nickname from User1 u")
-    int insertIntoFromSelect();
+    void insertIntoFromSelect();
 }
 

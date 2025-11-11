@@ -4,10 +4,11 @@ import com.codingapi.dbstream.listener.SQLExecuteListener;
 import lombok.Getter;
 
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class SQLRunningContext implements SQLExecuteListener {
+public class SQLRunningContext   {
 
     @Getter
     private final static SQLRunningContext instance = new SQLRunningContext();
@@ -23,10 +24,11 @@ public class SQLRunningContext implements SQLExecuteListener {
         if (listener != null) {
             listeners.add(listener);
         }
+
+        listeners.sort(Comparator.comparingInt(SQLExecuteListener::order));
     }
 
 
-    @Override
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         executeState.setResult(result);
         executeState.after();
@@ -36,7 +38,6 @@ public class SQLRunningContext implements SQLExecuteListener {
     }
 
 
-    @Override
     public void before(SQLExecuteState executeState) throws SQLException {
         executeState.begin();
         for (SQLExecuteListener listener : listeners) {

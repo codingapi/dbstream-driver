@@ -81,7 +81,14 @@ public class DBEvent {
     }
 
     public void addPrimaryKey(String primaryKey) {
-        this.primaryKeys.add(primaryKey);
+        if(!this.primaryKeys.contains(primaryKey)) {
+            this.primaryKeys.add(primaryKey);
+        }
+    }
+
+
+    public boolean hasPrimaryKeys(){
+        return this.primaryKeys!=null && !this.primaryKeys.isEmpty();
     }
 
 }
