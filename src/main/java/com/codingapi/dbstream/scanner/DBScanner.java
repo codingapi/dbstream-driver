@@ -60,7 +60,6 @@ public class DBScanner {
             tableInfo.addPrimaryKey(pkColumn);
         }
         pkRs.close();
-        System.out.println(tableName+" PrimaryKeys:" + tableInfo.getPrimaryKeys());
         tableInfo.reloadPrimaryColumns();
 
         dbTableSerializableHelper.serialize(tableInfo);

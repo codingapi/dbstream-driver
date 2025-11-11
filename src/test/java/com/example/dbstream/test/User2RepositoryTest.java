@@ -159,13 +159,6 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test7() {
-//        User2 user = new User2();
-//        user.setId(7);
-//        user.setUsername("admin");
-//        user.setPassword("admin");
-//        user.setEmail("admin@example.com");
-//        user.setNickname("admin");
-//        userRepository.save(user);
         userRepository.resetPasswordByUsername1("admin");
     }
 
