@@ -1,0 +1,13 @@
+sql|table|alias|where
+DELETE FROM users WHERE id = 1|users||id = 1
+DELETE u FROM users u WHERE u.id = 1|users|u|u.id = 1
+DELETE FROM public.users AS u WHERE u.age > 18|public.users|u|u.age > 18
+DELETE FROM schema.table_name a WHERE a.id IN (SELECT id FROM tmp)|schema.table_name|a|a.id IN (SELECT id FROM tmp)
+DELETE FROM [User] AS u WHERE [Id] = 2|User|u|[Id] = 2
+DELETE FROM users AS u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)|users|u|EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+DELETE FROM orders o USING users u WHERE o.user_id = u.id AND u.id = 10|orders|o|o.user_id = u.id AND u.id = 10
+DELETE FROM t1 WHERE col = 'WHEREish'|t1||col = 'WHEREish'
+DELETE FROM t WHERE col=1|t||col=1
+DELETE FROM users WHERE id = ?|users||id = ?
+DELETE FROM users|users||
+DELETE FROM `users` WHERE id = ?|users||id = ?

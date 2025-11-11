@@ -13,7 +13,7 @@ public class DBTableSerializableHelper {
     private final File path;
 
     public DBTableSerializableHelper(String jdbcKey) {
-        this.path = new File("./dbstream/" + jdbcKey + "/");
+        this.path = new File("./.dbstream/" + jdbcKey + "/");
         if (!this.path.exists()) {
             boolean parentResult = path.getParentFile().mkdir();
             boolean currentResult = path.mkdir();

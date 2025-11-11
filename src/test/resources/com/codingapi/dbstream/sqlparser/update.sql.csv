@@ -1,0 +1,6 @@
+sql|table|alias|columns|where
+UPDATE user SET name='Tom' WHERE id=1|user||name|id=1
+UPDATE user u SET name='Tom', age=? WHERE id=?|user|u|name,age|id=?
+UPDATE [user] AS t SET t.name=?, t.age=?|user|t|name,age|
+UPDATE schema.user AS u SET u.age=u.age+1|schema.user|u|age|
+UPDATE `user_info` SET nickname=?,email=?|user_info||nickname,email|

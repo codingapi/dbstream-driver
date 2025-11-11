@@ -1,0 +1,3 @@
+sql|table|columns|selectsql
+INSERT INTO user (id, name, age) VALUES (?, ?, ?)|user|id,name,age|
+INSERT INTO `user_info`(uid, uname) SELECT id, name FROM old_user WHERE id>10|user_info|uid,uname|SELECT id, name FROM old_user WHERE id>10
