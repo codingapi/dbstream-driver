@@ -20,7 +20,6 @@ public class InsertDBEventParser {
     private final InsertSQLParser sqlParser;
     private final SQLExecuteState executeState;
     private final DbTable dbTable;
-    private boolean defaultInsertSQL = true;
     private List<Map<String, Object>> dataList = new ArrayList<>();
     private final List<String> columns;
 
@@ -79,30 +78,9 @@ public class InsertDBEventParser {
         return eventList;
     }
 
-    private boolean isColumnPrimaryKey(String primaryKey) {
-        for (String column : columns) {
-            if (primaryKey.equalsIgnoreCase(column)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean columnsHasPrimaryKeys() {
-        List<String> primaryKeys = this.dbTable.getPrimaryKeys();
-        for (String primaryKey : primaryKeys) {
-            if (!this.isColumnPrimaryKey(primaryKey)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
     public void prepare() throws SQLException {
-        this.defaultInsertSQL = this.sqlParser.isDefaultInsertSQL();
-        if (this.defaultInsertSQL) {
+        boolean defaultInsertSQL = this.sqlParser.isDefaultInsertSQL();
+        if (defaultInsertSQL) {
             this.loadDefaultInsertDataList();
         } else {
             this.loadSelectInsertDataList();

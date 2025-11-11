@@ -19,17 +19,6 @@ public class DBMetaData {
     private final List<String> updateTableMetaList = new ArrayList<>();
 
     /**
-     * 创建唯一标识
-     *
-     * @return sha256(jdbcUrl+schema)
-     */
-    private String generateKey(String schema) {
-        String jdbcUrl = this.getJdbcUrl();
-        String data = String.format("%s#%s", jdbcUrl, schema == null ? "" : schema);
-        return SHA256Utils.sha256(data);
-    }
-
-    /**
      * 数据记录时间
      */
     @Getter
@@ -47,9 +36,8 @@ public class DBMetaData {
     @Getter
     private final Properties properties;
 
-    public DBMetaData(Properties properties, String schema) {
+    public DBMetaData(Properties properties) {
         this.properties = properties;
-        this.properties.setProperty(DBMetaData.KEY_JDBC_KEY, this.generateKey(schema));
     }
 
     /**
@@ -59,7 +47,7 @@ public class DBMetaData {
      */
     public void addUpdateTableMateList(String tableName) {
         String upTableName = tableName.toUpperCase();
-        if (this.updateTableMetaList.contains(upTableName)) {
+        if (!this.updateTableMetaList.contains(upTableName)) {
             this.updateTableMetaList.add(upTableName);
         }
     }
@@ -144,6 +132,11 @@ public class DBMetaData {
      * @param updateList 更新的表元数据信息
      */
     void updateDbTable(List<DbTable> updateList) {
+        if (this.tables == null || this.tables.isEmpty()) {
+            this.tables = new ArrayList<>(updateList);
+            return;
+        }
+
         List<DbTable> list = new ArrayList<>();
         Map<String, DbTable> updateDbTables = new HashMap<>();
         for (DbTable update : updateList) {
@@ -162,7 +155,21 @@ public class DBMetaData {
             }
         }
 
-        this.tables.clear();
+        // 添加新增的表（在 updateList 中但不在原有 tables 中的表）
+        for (DbTable update : updateList) {
+            String tableName = update.getName().toUpperCase();
+            boolean exists = false;
+            for (DbTable existing : this.tables) {
+                if (existing.getName().equalsIgnoreCase(tableName)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                list.add(update);
+            }
+        }
+
         this.tables = list;
     }
 }

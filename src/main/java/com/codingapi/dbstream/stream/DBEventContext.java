@@ -2,12 +2,12 @@ package com.codingapi.dbstream.stream;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DBEventContext {
 
-    private final List<DBEventPusher> pushers = new ArrayList<>();
+    private final List<DBEventPusher> pushers = new CopyOnWriteArrayList<>();
 
     @Getter
     private final static DBEventContext instance = new DBEventContext();
@@ -35,7 +35,9 @@ public class DBEventContext {
     }
 
     public void addPusher(DBEventPusher pusher) {
-        pushers.add(pusher);
+        if (pusher != null) {
+            pushers.add(pusher);
+        }
     }
 
 }

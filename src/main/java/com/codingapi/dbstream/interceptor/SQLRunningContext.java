@@ -4,8 +4,8 @@ import com.codingapi.dbstream.listener.SQLExecuteListener;
 import lombok.Getter;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class SQLRunningContext implements SQLExecuteListener {
 
@@ -13,14 +13,16 @@ public class SQLRunningContext implements SQLExecuteListener {
     private final static SQLRunningContext instance = new SQLRunningContext();
 
     @Getter
-    private final List<SQLExecuteListener> listeners = new ArrayList<>();
+    private final List<SQLExecuteListener> listeners = new CopyOnWriteArrayList<>();
 
     private SQLRunningContext() {
 
     }
 
     public void addListener(SQLExecuteListener listener) {
-        listeners.add(listener);
+        if (listener != null) {
+            listeners.add(listener);
+        }
     }
 
 

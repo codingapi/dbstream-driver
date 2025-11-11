@@ -7,18 +7,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBTableSerializableHelper {
 
+    private static final Logger LOGGER = Logger.getLogger(DBTableSerializableHelper.class.getName());
     private final File path;
 
     public DBTableSerializableHelper(String jdbcKey) {
         this.path = new File("./.dbstream/" + jdbcKey + "/");
         if (!this.path.exists()) {
-            boolean parentResult = path.getParentFile().mkdir();
-            boolean currentResult = path.mkdir();
-            boolean result = parentResult && currentResult;
-            System.out.println("Serializable Table " + result + " File Path:" + this.path);
+            boolean result = path.mkdirs();
+            LOGGER.log(Level.INFO, "Serializable Table directory created: {0}, File Path: {1}", 
+                    new Object[]{result, this.path.getAbsolutePath()});
         }
     }
 
@@ -39,7 +41,7 @@ public class DBTableSerializableHelper {
         }
         boolean deleted = file.delete();
         if (!deleted) {
-            System.err.println("⚠️ 无法删除文件: " + file.getAbsolutePath());
+            LOGGER.log(Level.WARNING, "Failed to delete file: {0}", file.getAbsolutePath());
         }
     }
 

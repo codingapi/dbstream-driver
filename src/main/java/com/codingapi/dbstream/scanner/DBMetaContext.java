@@ -3,9 +3,9 @@ package com.codingapi.dbstream.scanner;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 数据库元数据信息上下文对象
@@ -19,7 +19,7 @@ public class DBMetaContext {
     }
 
     // key:jdbcKey,value:DBMetaData
-    private final Map<String, DBMetaData> cache = new HashMap<>();
+    private final Map<String, DBMetaData> cache = new ConcurrentHashMap<>();
 
     /**
      * 获取元数据库的信息
@@ -28,6 +28,9 @@ public class DBMetaContext {
      * @return 元数据信息
      */
     public DBMetaData getMetaData(String key) {
+        if(key==null){
+            return null;
+        }
         return cache.get(key);
     }
 

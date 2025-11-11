@@ -1,20 +1,16 @@
-package com.example.dbstream.test;
+package com.example.dbstream.tests;
 
 
 import com.codingapi.dbstream.DBStreamContext;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.DBEventPusher;
 import com.example.dbstream.entity.User2;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User2Repository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
 import javax.transaction.Transactional;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

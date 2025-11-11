@@ -1,4 +1,4 @@
-package com.example.dbstream.test;
+package com.example.dbstream.tests;
 
 
 import com.codingapi.dbstream.DBStreamContext;

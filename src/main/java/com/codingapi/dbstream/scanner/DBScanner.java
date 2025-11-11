@@ -25,7 +25,7 @@ public class DBScanner {
         this.schema = connection.getSchema();
         this.metaData = connection.getMetaData();
         this.catalog = connection.getCatalog();
-        this.dbMetaData = new DBMetaData(info, this.schema);
+        this.dbMetaData = new DBMetaData(info);
         this.dbTableSerializableHelper = new DBTableSerializableHelper(this.dbMetaData.getKeyJdbcKey());
     }
 
