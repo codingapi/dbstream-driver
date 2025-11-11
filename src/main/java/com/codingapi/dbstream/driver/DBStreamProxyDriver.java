@@ -52,6 +52,9 @@ public class DBStreamProxyDriver implements Driver {
         Enumeration<Driver> drivers = DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver driver = drivers.nextElement();
+            if(driver.getClass().equals(DBStreamProxyDriver.class)){
+                continue;
+            }
             if (driver.acceptsURL(url)) {
                 this.driver = driver;
                 return true;
