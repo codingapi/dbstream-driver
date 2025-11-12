@@ -8,7 +8,7 @@ import com.codingapi.dbstream.parser.SQLParser;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.utils.SQLUtils;
 
-public class SQLDeleteExecuteListener extends SQLStreamExecuteListener {
+public class SQLDeleteExecuteListener extends DBEventExecuteListener {
 
     @Override
     public int order() {
@@ -16,7 +16,7 @@ public class SQLDeleteExecuteListener extends SQLStreamExecuteListener {
     }
 
     @Override
-    public boolean isSupport(String sql) {
+    public boolean support(String sql) {
         return SQLUtils.isDeleteSQL(sql);
     }
 

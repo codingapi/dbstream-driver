@@ -8,7 +8,7 @@ import com.codingapi.dbstream.parser.SQLParser;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.utils.SQLUtils;
 
-public class SQLInsertExecuteListener extends SQLStreamExecuteListener {
+public class SQLInsertExecuteListener extends DBEventExecuteListener {
 
     @Override
     public int order() {
@@ -16,7 +16,7 @@ public class SQLInsertExecuteListener extends SQLStreamExecuteListener {
     }
 
     @Override
-    public boolean isSupport(String sql) {
+    public boolean support(String sql) {
         return SQLUtils.isInsertSQL(sql);
     }
 

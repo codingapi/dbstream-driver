@@ -8,7 +8,7 @@ import com.codingapi.dbstream.parser.UpdateSQLParser;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.utils.SQLUtils;
 
-public class SQLUpdateExecuteListener extends SQLStreamExecuteListener {
+public class SQLUpdateExecuteListener extends DBEventExecuteListener {
 
     @Override
     public int order() {
@@ -16,7 +16,7 @@ public class SQLUpdateExecuteListener extends SQLStreamExecuteListener {
     }
 
     @Override
-    public boolean isSupport(String sql) {
+    public boolean support(String sql) {
         return SQLUtils.isUpdateSQL(sql);
     }
 

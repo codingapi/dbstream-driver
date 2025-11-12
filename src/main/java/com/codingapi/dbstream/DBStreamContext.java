@@ -1,6 +1,6 @@
 package com.codingapi.dbstream;
 
-import com.codingapi.dbstream.interceptor.SQLRunningContext;
+import com.codingapi.dbstream.interceptor.SQLExecuteListenerContext;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
 import com.codingapi.dbstream.provider.DBTableSupportProvider;
 import com.codingapi.dbstream.provider.DefaultDBTableSupportProvider;
@@ -37,7 +37,7 @@ public class DBStreamContext {
      * @param sqlExecuteListener 订阅
      */
     public void addListener(SQLExecuteListener sqlExecuteListener) {
-        SQLRunningContext.getInstance().addListener(sqlExecuteListener);
+        SQLExecuteListenerContext.getInstance().addListener(sqlExecuteListener);
     }
 
     /**

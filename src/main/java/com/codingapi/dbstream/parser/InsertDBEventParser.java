@@ -19,7 +19,10 @@ public class InsertDBEventParser implements DBEventParser{
     private final InsertSQLParser sqlParser;
     private final SQLExecuteState executeState;
     private final DbTable dbTable;
+
+    // 插入的数据记录
     private List<Map<String, Object>> dataList = new ArrayList<>();
+    // 插入的字段信息
     private final List<String> columns;
 
     public InsertDBEventParser(SQLExecuteState executeState, InsertSQLParser sqlParser, DbTable dbTable) {
@@ -29,7 +32,9 @@ public class InsertDBEventParser implements DBEventParser{
         this.columns = sqlParser.getColumnValues();
     }
 
+    @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
+        // 数据库执行没有受影响的行数，则直接返回空对象
         if (ResultSetUtils.isNotUpdatedRows(result)) {
             return new ArrayList<>();
         }
@@ -74,11 +79,15 @@ public class InsertDBEventParser implements DBEventParser{
                 }
             }
         }
-
         return eventList;
     }
 
+    /**
+     * 分析插入的数据信息
+     */
+    @Override
     public void prepare() throws SQLException {
+        // 是否为默认的insert语句，即非insert into select 语句
         boolean defaultInsertSQL = this.sqlParser.isDefaultInsertSQL();
         if (defaultInsertSQL) {
             this.loadDefaultInsertDataList();
@@ -109,6 +118,7 @@ public class InsertDBEventParser implements DBEventParser{
             InsertSQLParser.InsertValue insertValue = values.get(i);
             Object value = insertValue;
 
+            // 根据不同的参数类型，获取对应的真实参数数据
             if (insertValue.isSelect()) {
                 List<Map<String, Object>> columValues = this.executeState.query(insertValue.getValue());
                 if (!columValues.isEmpty()) {

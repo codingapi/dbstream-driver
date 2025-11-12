@@ -15,24 +15,27 @@ import java.util.Map;
 
 public class DeleteDBEventParser  implements DBEventParser {
 
-    private final List<Map<String, Object>> prepareList = new ArrayList<>();
-
-    private final String aliasTable;
     private final DeleteSQLParser sqlParser;
     private final SQLExecuteState executeState;
     private final DbTable dbTable;
+
+    // 执行前的数据记录信息
+    private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
     public DeleteDBEventParser(SQLExecuteState executeState, DeleteSQLParser sqlParser, DbTable dbTable) {
         this.sqlParser = sqlParser;
         this.dbTable = dbTable;
         this.executeState = executeState;
-        this.aliasTable = sqlParser.getTableAlias();
     }
 
+    @Override
     public void prepare() throws SQLException {
         this.updateRows();
     }
 
+    /**
+     * 分析受影响的数据
+     */
     private void updateRows() throws SQLException {
         String query = this.loadUpdateRowSQL();
         List<Object> params = this.loadUpdateRowParamList();
@@ -40,20 +43,24 @@ public class DeleteDBEventParser  implements DBEventParser {
         prepareList.addAll(this.executeState.query(query, params));
     }
 
+    /**
+     * 组装受影响的数据的查询SQL
+     */
     private String loadUpdateRowSQL() {
+        String aliasTable = this.sqlParser.getTableAlias();
         String whereSQL = this.sqlParser.getWhereSQL();
         String tableName = this.dbTable.getName();
         StringBuilder querySQL = new StringBuilder();
         querySQL.append("SELECT ");
         for (DbColumn dbColumn : dbTable.getPrimaryColumns()) {
-            if (this.aliasTable != null) {
-                querySQL.append(this.aliasTable).append(".");
+            if (aliasTable != null) {
+                querySQL.append(aliasTable).append(".");
             }
             querySQL.append(dbColumn.getName()).append(",");
         }
         querySQL.deleteCharAt(querySQL.length() - 1);
         querySQL.append(" FROM ").append(tableName);
-        if (this.aliasTable != null) {
+        if (aliasTable != null) {
             querySQL.append(" AS ").append(aliasTable);
         }
         querySQL.append(" WHERE ");
@@ -66,6 +73,9 @@ public class DeleteDBEventParser  implements DBEventParser {
     }
 
 
+    /**
+     * 组织受影响数据的查询参数
+     */
     private List<Object> loadUpdateRowParamList() {
         List<Object> params = new ArrayList<>();
         String nativeSQL = this.executeState.getSql();
@@ -90,8 +100,10 @@ public class DeleteDBEventParser  implements DBEventParser {
     }
 
 
+    @Override
     public List<DBEvent> loadEvents(Object result) throws SQLException {
         List<DBEvent> eventList = new ArrayList<>();
+        // 数据库执行没有受影响的行数，则直接返回空对象
         if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }

@@ -32,6 +32,7 @@ public class InsertSQLParser implements SQLParser{
      * 提取表名
      * 示例: INSERT INTO `user` (id,name) VALUES (?,?)  → user
      */
+    @Override
     public String getTableName() {
         Matcher matcher = TABLE_NAME_PATTERN.matcher(sql);
         if (matcher.find()) {

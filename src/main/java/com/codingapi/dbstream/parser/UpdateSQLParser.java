@@ -22,6 +22,7 @@ public class UpdateSQLParser implements SQLParser{
     /**
      * 提取表名（兼容 schema.table, 支持方括号/引号）
      */
+    @Override
     public String getTableName() {
         Matcher matcher = TABLE_NAME_PATTERN.matcher(sql);
         if (matcher.find()) {

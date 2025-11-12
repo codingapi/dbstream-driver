@@ -359,7 +359,7 @@ public class SQLExecuteState {
      *
      * @param tableName 表名
      */
-    public void updateMetaData(String tableName) throws SQLException {
+    public void triggerDBMetaData(String tableName) throws SQLException {
         // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
         if (this.metaData.isUpdateTableMeta(tableName)) {
             DBScanner dbScanner = new DBScanner(connectionProxy.getConnection(), getDriverProperties());

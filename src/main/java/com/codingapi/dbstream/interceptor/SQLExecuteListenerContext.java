@@ -8,18 +8,24 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class SQLRunningContext   {
+/**
+ * SQLExecuteListener 上下文对象
+ */
+public class SQLExecuteListenerContext {
 
     @Getter
-    private final static SQLRunningContext instance = new SQLRunningContext();
+    private final static SQLExecuteListenerContext instance = new SQLExecuteListenerContext();
 
     @Getter
     private final List<SQLExecuteListener> listeners = new CopyOnWriteArrayList<>();
 
-    private SQLRunningContext() {
+    private SQLExecuteListenerContext() {
 
     }
 
+    /**
+     * 添加SQL执行监听器
+     */
     public void addListener(SQLExecuteListener listener) {
         if (listener != null) {
             listeners.add(listener);
@@ -29,6 +35,9 @@ public class SQLRunningContext   {
     }
 
 
+    /**
+     * SQL执行后拦截
+     */
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         executeState.setResult(result);
         executeState.after();
@@ -38,6 +47,9 @@ public class SQLRunningContext   {
     }
 
 
+    /**
+     * SQL执行前拦截
+     */
     public void before(SQLExecuteState executeState) throws SQLException {
         executeState.begin();
         for (SQLExecuteListener listener : listeners) {
