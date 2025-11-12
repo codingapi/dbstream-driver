@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.sqlparser;
 
+import com.codingapi.dbstream.parser.InsertSQLParser;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 

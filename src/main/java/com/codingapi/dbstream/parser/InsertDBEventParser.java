@@ -3,7 +3,6 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.sqlparser.InsertSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
 import com.codingapi.dbstream.utils.ResultSetUtils;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InsertDBEventParser {
+public class InsertDBEventParser implements DBEventParser{
 
     private final InsertSQLParser sqlParser;
     private final SQLExecuteState executeState;
@@ -103,6 +102,7 @@ public class InsertDBEventParser {
 
     private void loadDefaultInsertDataList() throws SQLException {
         List<InsertSQLParser.InsertValue> values = this.sqlParser.getValues();
+        List<Object> paramList = this.executeState.getListParams();
         Map<String, Object> data = new HashMap<>();
         for (int i = 0; i < columns.size(); i++) {
             String column = columns.get(i);
@@ -118,7 +118,7 @@ public class InsertDBEventParser {
                     }
                 }
             } else if (insertValue.isJdbc()) {
-                value = i + 1;
+                value = paramList.get(i);
             } else {
                 value = insertValue.getValue();
             }

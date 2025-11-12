@@ -3,7 +3,6 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.sqlparser.UpdateSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
 import com.codingapi.dbstream.utils.ResultSetUtils;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateDBEventParser {
+public class UpdateDBEventParser implements DBEventParser{
 
     private final UpdateSQLParser sqlParser;
     private final String aliasTable;

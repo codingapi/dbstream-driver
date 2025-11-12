@@ -2,19 +2,17 @@ package com.example.dbstream.tests;
 
 
 import com.codingapi.dbstream.DBStreamContext;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.DBEventPusher;
 import com.example.dbstream.entity.User1;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User1Repository;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
-import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,15 +24,18 @@ class User1RepositoryTest {
     @Autowired
     private User1Repository userRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
 
     @BeforeEach
     void setUp() {
-        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
-            @Override
-            public void push(List<DBEvent> events) {
-                System.out.println(events);
-            }
-        });
+//        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+//            @Override
+//            public void push(List<DBEvent> events) {
+//                System.out.println(events);
+//            }
+//        });
     }
 
     /**
@@ -171,32 +172,25 @@ class User1RepositoryTest {
      */
     @Test
     @Transactional
-    @Rollback(false)
+    @Rollback(value = false)
     void test8() {
+        List<User1> list = userRepository.findAll();
+        for (User1 user:list){
+            user.setEmail("111");
+        }
+        userRepository.saveAll(list);
 
-        DBStreamContext.getInstance().addListener(new MySQLListener());
-
-        List<User1> list = new ArrayList<>();
-
-
-        for (int i=0;i<10;i++){
+        userRepository.deleteAll();
+        for (int i=0;i<5;i++){
             User1 user1 = new User1();
             user1.setUsername("admin1");
             user1.setPassword("admin1");
             user1.setEmail("admin1@example.com");
             user1.setNickname("admin1");
-            list.add(user1);
-
-            User1 user2 = new User1();
-            user2.setUsername("admin2");
-            user2.setPassword("admin2");
-            user2.setEmail("admin2@example.com");
-            user2.setNickname("admin2");
-            list.add(user2);
+            entityManager.persist(user1);
         }
-
-        userRepository.saveAll(list);
-
+        entityManager.flush();
+        entityManager.clear();
 
     }
 

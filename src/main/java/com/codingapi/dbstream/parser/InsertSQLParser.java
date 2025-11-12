@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.sqlparser;
+package com.codingapi.dbstream.parser;
 
 import com.codingapi.dbstream.utils.SQLUtils;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InsertSQLParser {
+public class InsertSQLParser implements SQLParser{
 
     // 匹配 INSERT INTO table_name (...)
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile(

@@ -147,6 +147,7 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void clearParameters() throws SQLException {
         preparedStatement.clearParameters();
+        this.executeState.cleanParams();
     }
 
     @Override
@@ -172,6 +173,7 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void addBatch() throws SQLException {
         preparedStatement.addBatch();
+        this.executeState.addBatch();
     }
 
     @Override
@@ -509,11 +511,13 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void addBatch(String sql) throws SQLException {
         preparedStatement.addBatch(sql);
+        this.executeState.addBatch(sql);
     }
 
     @Override
     public void clearBatch() throws SQLException {
         preparedStatement.clearBatch();
+        this.executeState.clearBatch();
     }
 
     @Override

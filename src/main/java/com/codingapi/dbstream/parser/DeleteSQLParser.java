@@ -1,11 +1,11 @@
-package com.codingapi.dbstream.sqlparser;
+package com.codingapi.dbstream.parser;
 
 import com.codingapi.dbstream.utils.SQLUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DeleteSQLParser {
+public class DeleteSQLParser implements SQLParser {
 
     private final String sql;
 
