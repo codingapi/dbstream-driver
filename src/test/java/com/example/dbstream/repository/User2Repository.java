@@ -25,7 +25,7 @@ public interface User2Repository extends JpaRepository<User2, Long> {
     int counts();
 
     @Modifying
-    @Query("update User2 set password = now() where username = ?1")
+    @Query("update User2 set password = '123' where username = ?1")
     int resetPasswordByUsername1(String username);
 
     @Modifying

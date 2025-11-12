@@ -163,6 +163,7 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public boolean execute() throws SQLException {
+        System.out.println("execute:"+this.executeState.getSql());
         SQLRunningContext.getInstance().before(this.executeState);
         boolean result = preparedStatement.execute();
         SQLRunningContext.getInstance().after(this.executeState, result);
@@ -171,6 +172,7 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public void addBatch() throws SQLException {
+        System.out.println("addBatch:"+this.executeState.getSql());
         preparedStatement.addBatch();
     }
 
@@ -390,6 +392,7 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public int executeUpdate(String sql) throws SQLException {
         this.executeState.setSql(sql);
+        System.out.println("executeUpdate:"+sql);
         SQLRunningContext.getInstance().before(this.executeState);
         int result = preparedStatement.executeUpdate(sql);
         SQLRunningContext.getInstance().after(this.executeState, result);

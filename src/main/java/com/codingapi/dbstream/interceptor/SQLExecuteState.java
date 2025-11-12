@@ -216,10 +216,12 @@ public class SQLExecuteState {
                     Map<String, Object> map = new HashMap<>();
                     ResultSetMetaData resultSetMetaData = rs.getMetaData();
                     int columnCount = resultSetMetaData.getColumnCount();
-                    List<DbColumn> primaryKeyColumns = dbTable.getPrimaryColumns();
                     for (int i = 1; i <= columnCount; i++) {
-                        DbColumn dbColumn = primaryKeyColumns.get(i - 1);
-                        map.put(dbColumn.getName(), rs.getObject(i));
+                        String columName = resultSetMetaData.getColumnName(i);
+                        DbColumn dbColumn = dbTable.getColumnByName(columName);
+                        if(dbColumn!=null) {
+                            map.put(dbColumn.getName(), rs.getObject(i));
+                        }
                     }
                     list.add(map);
                 }
