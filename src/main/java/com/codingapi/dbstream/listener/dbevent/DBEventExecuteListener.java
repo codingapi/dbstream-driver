@@ -1,14 +1,16 @@
 package com.codingapi.dbstream.listener.dbevent;
 
 import com.codingapi.dbstream.DBStreamContext;
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
-import com.codingapi.dbstream.listener.SQLExecuteListener;
-import com.codingapi.dbstream.parser.*;
-import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.event.DBEvent;
 import com.codingapi.dbstream.event.TransactionEventPools;
+import com.codingapi.dbstream.interceptor.SQLExecuteState;
+import com.codingapi.dbstream.listener.SQLExecuteListener;
+import com.codingapi.dbstream.parser.DBEventParser;
+import com.codingapi.dbstream.parser.SQLParser;
+import com.codingapi.dbstream.scanner.DbTable;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -77,6 +79,35 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
         }
     }
 
+
+    /**
+     * batch result 结果数组转化
+     */
+    private List<Object> batchResultToArrays(Object result, int size) {
+        List<Object> list = new ArrayList<>();
+        if (result instanceof int[]) {
+            int[] rows = (int[]) result;
+            for (int row : rows) {
+                list.add(row);
+            }
+            return list;
+        }
+        if (result instanceof long[]) {
+            long[] rows = (long[]) result;
+            for (long row : rows) {
+                list.add(row);
+            }
+            return list;
+        }
+
+        // 如果非int[] 和 long[] 的返回数据，则直接返回0，忽略事件
+        for (int i = 0; i < size; i++) {
+            list.add(0);
+        }
+        return list;
+
+    }
+
     @Override
     public void after(SQLExecuteState executeState, Object result) throws SQLException {
         String sql = executeState.getSql();
@@ -86,11 +117,16 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
             // 批量模式
             if (executeState.isBatchMode()) {
                 List<SQLExecuteState> executeStateList = executeState.getBatchSQLExecuteStateList();
-                for (int i = 0; i < executeStateList.size(); i++) {
+                int batchSize = executeStateList.size();
+
+                //批量模式下的返回数据是数组格式
+                List<Object> arrays = this.batchResultToArrays(result, batchSize);
+
+                for (int i = 0; i < batchSize; i++) {
                     DBEventParser dataParser = ThreadLocalContext.getInstance().get(i);
                     if (dataParser != null) {
                         // 获取DB事件信息
-                        List<DBEvent> eventList = dataParser.loadEvents(result);
+                        List<DBEvent> eventList = dataParser.loadEvents(arrays.get(i));
                         TransactionEventPools.getInstance().addEvents(transactionKey, eventList);
                     }
                 }
