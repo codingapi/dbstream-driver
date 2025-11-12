@@ -1,6 +1,6 @@
 package com.codingapi.dbstream.parser;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
+import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.event.DBEvent;
@@ -16,13 +16,13 @@ import java.util.Map;
 public class DeleteDBEventParser implements DBEventParser {
 
     private final DeleteSQLParser sqlParser;
-    private final SQLExecuteState executeState;
+    private final SQLRunningState executeState;
     private final DbTable dbTable;
 
     // 执行前的数据记录信息
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
-    public DeleteDBEventParser(SQLExecuteState executeState, DeleteSQLParser sqlParser, DbTable dbTable) {
+    public DeleteDBEventParser(SQLRunningState executeState, DeleteSQLParser sqlParser, DbTable dbTable) {
         this.sqlParser = sqlParser;
         this.dbTable = dbTable;
         this.executeState = executeState;

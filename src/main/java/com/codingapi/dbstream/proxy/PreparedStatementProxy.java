@@ -1,7 +1,7 @@
 package com.codingapi.dbstream.proxy;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
-import com.codingapi.dbstream.interceptor.SQLExecuteListenerContext;
+import com.codingapi.dbstream.listener.SQLRunningState;
+import com.codingapi.dbstream.listener.SQLRunningContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
 
 import javax.sql.rowset.CachedRowSet;
@@ -17,193 +17,193 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     private final ConnectionProxy connection;
     private final PreparedStatement preparedStatement;
-    private final SQLExecuteState executeState;
+    private final SQLRunningState runningState;
 
     public PreparedStatementProxy(ConnectionProxy connection, PreparedStatement preparedStatement, DBMetaData metaData, String sql) throws SQLException {
         this.connection = connection;
         this.preparedStatement = preparedStatement;
-        this.executeState = new SQLExecuteState(sql, connection, this, metaData);
+        this.runningState = new SQLRunningState(sql, connection, this, metaData);
         this.cachedKeys = null;
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         ResultSet resultSet = preparedStatement.executeQuery();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, resultSet);
+        SQLRunningContext.getInstance().after(this.runningState, resultSet);
         return resultSet;
     }
 
     @Override
     public int executeUpdate() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         int result = preparedStatement.executeUpdate();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public void setNull(int parameterIndex, int sqlType) throws SQLException {
         preparedStatement.setNull(parameterIndex, sqlType);
-        this.executeState.setParam(parameterIndex, null);
+        this.runningState.setParam(parameterIndex, null);
     }
 
     @Override
     public void setBoolean(int parameterIndex, boolean x) throws SQLException {
         preparedStatement.setBoolean(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setByte(int parameterIndex, byte x) throws SQLException {
         preparedStatement.setByte(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setShort(int parameterIndex, short x) throws SQLException {
         preparedStatement.setShort(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setInt(int parameterIndex, int x) throws SQLException {
         preparedStatement.setInt(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setLong(int parameterIndex, long x) throws SQLException {
         preparedStatement.setLong(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setFloat(int parameterIndex, float x) throws SQLException {
         preparedStatement.setFloat(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setDouble(int parameterIndex, double x) throws SQLException {
         preparedStatement.setDouble(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
         preparedStatement.setBigDecimal(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setString(int parameterIndex, String x) throws SQLException {
         preparedStatement.setString(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBytes(int parameterIndex, byte[] x) throws SQLException {
         preparedStatement.setBytes(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setDate(int parameterIndex, Date x) throws SQLException {
         preparedStatement.setDate(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setTime(int parameterIndex, Time x) throws SQLException {
         preparedStatement.setTime(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
         preparedStatement.setTimestamp(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setAsciiStream(parameterIndex, x, length);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setUnicodeStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setUnicodeStream(parameterIndex, x, length);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x, int length) throws SQLException {
         preparedStatement.setBinaryStream(parameterIndex, x, length);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void clearParameters() throws SQLException {
         preparedStatement.clearParameters();
-        this.executeState.cleanParams();
+        this.runningState.cleanParams();
     }
 
     @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setObject(int parameterIndex, Object x) throws SQLException {
         preparedStatement.setObject(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public boolean execute() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         boolean result = preparedStatement.execute();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public void addBatch() throws SQLException {
         preparedStatement.addBatch();
-        this.executeState.addBatch();
+        this.runningState.addBatch();
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader, int length) throws SQLException {
         preparedStatement.setCharacterStream(parameterIndex, reader, length);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setRef(int parameterIndex, Ref x) throws SQLException {
         preparedStatement.setRef(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBlob(int parameterIndex, Blob x) throws SQLException {
         preparedStatement.setBlob(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setClob(int parameterIndex, Clob x) throws SQLException {
         preparedStatement.setClob(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setArray(int parameterIndex, Array x) throws SQLException {
         preparedStatement.setArray(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
@@ -214,31 +214,31 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void setDate(int parameterIndex, Date x, Calendar cal) throws SQLException {
         preparedStatement.setDate(parameterIndex, x, cal);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setTime(int parameterIndex, Time x, Calendar cal) throws SQLException {
         preparedStatement.setTime(parameterIndex, x, cal);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal) throws SQLException {
         preparedStatement.setTimestamp(parameterIndex, x, cal);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setNull(int parameterIndex, int sqlType, String typeName) throws SQLException {
         preparedStatement.setNull(parameterIndex, sqlType, typeName);
-        this.executeState.setParam(parameterIndex, null);
+        this.runningState.setParam(parameterIndex, null);
     }
 
     @Override
     public void setURL(int parameterIndex, URL x) throws SQLException {
         preparedStatement.setURL(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
@@ -249,152 +249,152 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void setRowId(int parameterIndex, RowId x) throws SQLException {
         preparedStatement.setRowId(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setNString(int parameterIndex, String value) throws SQLException {
         preparedStatement.setNString(parameterIndex, value);
-        this.executeState.setParam(parameterIndex, value);
+        this.runningState.setParam(parameterIndex, value);
     }
 
     @Override
     public void setNCharacterStream(int parameterIndex, Reader value, long length) throws SQLException {
         preparedStatement.setNCharacterStream(parameterIndex, value, length);
-        this.executeState.setParam(parameterIndex, value);
+        this.runningState.setParam(parameterIndex, value);
     }
 
     @Override
     public void setNClob(int parameterIndex, NClob value) throws SQLException {
         preparedStatement.setNClob(parameterIndex, value);
-        this.executeState.setParam(parameterIndex, value);
+        this.runningState.setParam(parameterIndex, value);
     }
 
     @Override
     public void setClob(int parameterIndex, Reader reader, long length) throws SQLException {
         preparedStatement.setClob(parameterIndex, reader, length);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setBlob(int parameterIndex, InputStream inputStream, long length) throws SQLException {
         preparedStatement.setBlob(parameterIndex, inputStream, length);
-        this.executeState.setParam(parameterIndex, inputStream);
+        this.runningState.setParam(parameterIndex, inputStream);
     }
 
     @Override
     public void setNClob(int parameterIndex, Reader reader, long length) throws SQLException {
         preparedStatement.setNClob(parameterIndex, reader, length);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setSQLXML(int parameterIndex, SQLXML xmlObject) throws SQLException {
         preparedStatement.setSQLXML(parameterIndex, xmlObject);
-        this.executeState.setParam(parameterIndex, xmlObject);
+        this.runningState.setParam(parameterIndex, xmlObject);
     }
 
     @Override
     public void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType, scaleOrLength);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x, long length) throws SQLException {
         preparedStatement.setAsciiStream(parameterIndex, x, length);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x, long length) throws SQLException {
         preparedStatement.setBinaryStream(parameterIndex, x, length);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader, long length) throws SQLException {
         preparedStatement.setCharacterStream(parameterIndex, reader, length);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setAsciiStream(int parameterIndex, InputStream x) throws SQLException {
         preparedStatement.setAsciiStream(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
         preparedStatement.setBinaryStream(parameterIndex, x);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setCharacterStream(int parameterIndex, Reader reader) throws SQLException {
         preparedStatement.setCharacterStream(parameterIndex, reader);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setNCharacterStream(int parameterIndex, Reader value) throws SQLException {
         preparedStatement.setNCharacterStream(parameterIndex, value);
-        this.executeState.setParam(parameterIndex, value);
+        this.runningState.setParam(parameterIndex, value);
     }
 
     @Override
     public void setClob(int parameterIndex, Reader reader) throws SQLException {
         preparedStatement.setClob(parameterIndex, reader);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setBlob(int parameterIndex, InputStream inputStream) throws SQLException {
         preparedStatement.setBlob(parameterIndex, inputStream);
-        this.executeState.setParam(parameterIndex, inputStream);
+        this.runningState.setParam(parameterIndex, inputStream);
     }
 
     @Override
     public void setNClob(int parameterIndex, Reader reader) throws SQLException {
         preparedStatement.setNClob(parameterIndex, reader);
-        this.executeState.setParam(parameterIndex, reader);
+        this.runningState.setParam(parameterIndex, reader);
     }
 
     @Override
     public void setObject(int parameterIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType, scaleOrLength);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public void setObject(int parameterIndex, Object x, SQLType targetSqlType) throws SQLException {
         preparedStatement.setObject(parameterIndex, x, targetSqlType);
-        this.executeState.setParam(parameterIndex, x);
+        this.runningState.setParam(parameterIndex, x);
     }
 
     @Override
     public long executeLargeUpdate() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         long result = preparedStatement.executeLargeUpdate();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         ResultSet resultSet = preparedStatement.executeQuery(sql);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, resultSet);
+        SQLRunningContext.getInstance().after(this.runningState, resultSet);
         return resultSet;
     }
 
     @Override
     public int executeUpdate(String sql) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         int result = preparedStatement.executeUpdate(sql);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
@@ -456,10 +456,10 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public boolean execute(String sql) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
-        boolean result = preparedStatement.execute(executeState.getSql());
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
+        boolean result = preparedStatement.execute(runningState.getSql());
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
@@ -511,20 +511,20 @@ public class PreparedStatementProxy implements PreparedStatement {
     @Override
     public void addBatch(String sql) throws SQLException {
         preparedStatement.addBatch(sql);
-        this.executeState.addBatch(sql);
+        this.runningState.addBatch(sql);
     }
 
     @Override
     public void clearBatch() throws SQLException {
         preparedStatement.clearBatch();
-        this.executeState.clearBatch();
+        this.runningState.clearBatch();
     }
 
     @Override
     public int[] executeBatch() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         int[] result = preparedStatement.executeBatch();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
@@ -568,55 +568,55 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
-        int result = preparedStatement.executeUpdate(executeState.getSql(), autoGeneratedKeys);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
+        int result = preparedStatement.executeUpdate(runningState.getSql(), autoGeneratedKeys);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
-        int result = preparedStatement.executeUpdate(executeState.getSql(), columnIndexes);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
+        int result = preparedStatement.executeUpdate(runningState.getSql(), columnIndexes);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         int result = preparedStatement.executeUpdate(sql, columnNames);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         boolean result = preparedStatement.execute(sql, autoGeneratedKeys);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         boolean result = preparedStatement.execute(sql, columnIndexes);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public boolean execute(String sql, String[] columnNames) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         boolean result = preparedStatement.execute(sql, columnNames);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
@@ -667,45 +667,45 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public long[] executeLargeBatch() throws SQLException {
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        SQLRunningContext.getInstance().before(this.runningState);
         long[] result = preparedStatement.executeLargeBatch();
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public long executeLargeUpdate(String sql) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         long result = preparedStatement.executeLargeUpdate(sql);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public long executeLargeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         long result = preparedStatement.executeLargeUpdate(sql, autoGeneratedKeys);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public long executeLargeUpdate(String sql, int[] columnIndexes) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         long result = preparedStatement.executeLargeUpdate(sql, columnIndexes);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
     }
 
     @Override
     public long executeLargeUpdate(String sql, String[] columnNames) throws SQLException {
-        this.executeState.setSql(sql);
-        SQLExecuteListenerContext.getInstance().before(this.executeState);
+        this.runningState.setSql(sql);
+        SQLRunningContext.getInstance().before(this.runningState);
         long result = preparedStatement.executeLargeUpdate(sql, columnNames);
-        SQLExecuteListenerContext.getInstance().after(this.executeState, result);
+        SQLRunningContext.getInstance().after(this.runningState, result);
         return result;
 
     }

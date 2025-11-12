@@ -1,6 +1,6 @@
 package com.codingapi.dbstream.parser;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
+import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.event.DBEvent;
@@ -17,7 +17,7 @@ import java.util.Map;
 public class InsertDBEventParser implements DBEventParser {
 
     private final InsertSQLParser sqlParser;
-    private final SQLExecuteState executeState;
+    private final SQLRunningState executeState;
     private final DbTable dbTable;
 
     // 插入的数据记录
@@ -25,7 +25,7 @@ public class InsertDBEventParser implements DBEventParser {
     // 插入的字段信息
     private final List<String> columns;
 
-    public InsertDBEventParser(SQLExecuteState executeState, InsertSQLParser sqlParser, DbTable dbTable) {
+    public InsertDBEventParser(SQLRunningState executeState, InsertSQLParser sqlParser, DbTable dbTable) {
         this.sqlParser = sqlParser;
         this.executeState = executeState;
         this.dbTable = dbTable;

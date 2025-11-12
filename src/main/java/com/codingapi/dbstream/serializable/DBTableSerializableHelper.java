@@ -41,7 +41,7 @@ public class DBTableSerializableHelper {
     /**
      * 删除全部序列化文件
      */
-    public void clean() {
+    public void remove() {
         if (path.exists() && path.isDirectory()) {
             deleteRecursively(path);
         }

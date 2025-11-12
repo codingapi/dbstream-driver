@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC数据查询
+ * JDBC数据查询对象
  */
 public class JdbcQuery {
 

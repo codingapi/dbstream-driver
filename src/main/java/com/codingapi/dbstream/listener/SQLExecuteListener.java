@@ -1,9 +1,10 @@
 package com.codingapi.dbstream.listener;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
-
 import java.sql.SQLException;
 
+/**
+ * SQL执行监听器
+ */
 public interface SQLExecuteListener {
 
     /**
@@ -16,17 +17,17 @@ public interface SQLExecuteListener {
     /**
      * before sql execute
      *
-     * @param executeState execute state content
+     * @param runningState execute state content
      * @throws SQLException throws {@link SQLException}
      */
-    void before(SQLExecuteState executeState) throws SQLException;
+    void before(SQLRunningState runningState) throws SQLException;
 
     /**
      * after sql execute
      *
-     * @param executeState execute state content
+     * @param runningState execute state content
      * @throws SQLException throws {@link SQLException}
      */
-    void after(SQLExecuteState executeState, Object result) throws SQLException;
+    void after(SQLRunningState runningState, Object result) throws SQLException;
 
 }

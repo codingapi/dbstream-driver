@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.interceptor;
+package com.codingapi.dbstream.listener;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import java.util.*;
 /**
  * SQL执行参数信息
  */
-public class SQLExecuteParam {
+public class SQLRunningParam {
 
 
     /**
@@ -29,7 +29,7 @@ public class SQLExecuteParam {
     @Setter
     private String sql;
 
-    public SQLExecuteParam() {
+    public SQLRunningParam() {
         this.indexParams = new HashMap<>();
         this.mapParams = new HashMap<>();
     }

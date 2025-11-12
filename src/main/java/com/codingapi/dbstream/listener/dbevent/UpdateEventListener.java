@@ -1,6 +1,6 @@
 package com.codingapi.dbstream.listener.dbevent;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
+import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.parser.DBEventParser;
 import com.codingapi.dbstream.parser.SQLParser;
 import com.codingapi.dbstream.parser.UpdateDBEventParser;
@@ -8,7 +8,7 @@ import com.codingapi.dbstream.parser.UpdateSQLParser;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.utils.SQLUtils;
 
-public class SQLUpdateExecuteListener extends DBEventExecuteListener {
+public class UpdateEventListener extends DBEventListener {
 
     @Override
     public int order() {
@@ -26,8 +26,8 @@ public class SQLUpdateExecuteListener extends DBEventExecuteListener {
     }
 
     @Override
-    public DBEventParser createDbEventParser(SQLExecuteState sqlExecuteState, SQLParser sqlParser, DbTable dbTable) {
-        return new UpdateDBEventParser(sqlExecuteState, (UpdateSQLParser) sqlParser, dbTable);
+    public DBEventParser createDbEventParser(SQLRunningState runningState, SQLParser sqlParser, DbTable dbTable) {
+        return new UpdateDBEventParser(runningState, (UpdateSQLParser) sqlParser, dbTable);
     }
 
 }

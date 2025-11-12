@@ -6,13 +6,31 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  数据表元信息
+ */
 @Getter
 public class DbTable implements Serializable {
 
+    /**
+     * 表名称
+     */
     private final String name;
+    /**
+     * 表备注
+     */
     private final String comment;
+    /**
+     * 表字段
+     */
     private final List<DbColumn> columns = new ArrayList<>();
+    /**
+     * 主键keys
+     */
     private final List<String> primaryKeys = new ArrayList<>();
+    /**
+     * 主键字段（便于取值），数据来自于columns
+     */
     private final List<DbColumn> primaryColumns = new ArrayList<>();
 
     public DbTable(String name, String comment) {
@@ -23,7 +41,7 @@ public class DbTable implements Serializable {
     /**
      * 加载主键的字段
      */
-    public void reloadPrimaryColumns() {
+    void reloadPrimaryColumns() {
         if (this.primaryKeys.isEmpty()) {
             return;
         }
@@ -35,12 +53,12 @@ public class DbTable implements Serializable {
         }
     }
 
-    public void addColum(DbColumn column) {
+    void addColum(DbColumn column) {
         this.columns.add(column);
     }
 
 
-    public void addPrimaryKey(String key) {
+    void addPrimaryKey(String key) {
         if (!this.primaryKeys.contains(key)) {
             this.primaryKeys.add(key);
         }
@@ -68,12 +86,12 @@ public class DbTable implements Serializable {
         return null;
     }
 
-    public void setColumns(List<DbColumn> columns) {
+    void setColumns(List<DbColumn> columns) {
         this.columns.clear();
         this.columns.addAll(columns);
     }
 
-    public void setPrimaryKeys(List<String> primaryKeys) {
+    void setPrimaryKeys(List<String> primaryKeys) {
         this.primaryKeys.clear();
         this.primaryKeys.addAll(primaryKeys);
     }

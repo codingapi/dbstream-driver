@@ -1,6 +1,7 @@
 package com.codingapi.dbstream.scanner;
 
 import com.codingapi.dbstream.serializable.DBTableSerializableHelper;
+import com.codingapi.dbstream.utils.JdbcPropertyUtils;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -11,6 +12,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * 数据库扫描工具
+ */
 public class DBScanner {
 
     private final Connection connection;
@@ -26,7 +30,8 @@ public class DBScanner {
         this.metaData = connection.getMetaData();
         this.catalog = connection.getCatalog();
         this.dbMetaData = new DBMetaData(info);
-        this.dbTableSerializableHelper = new DBTableSerializableHelper(this.dbMetaData.getKeyJdbcKey());
+        String jdbcKey = JdbcPropertyUtils.getOrGenerateJdbcKey(info,this.schema);
+        this.dbTableSerializableHelper = new DBTableSerializableHelper(jdbcKey);
     }
 
 
@@ -69,7 +74,7 @@ public class DBScanner {
     }
 
     /**
-     * 扫描数据库中的所有表、字段和主键信息
+     * 扫描数据库中的所有表、字段和主键信息，并缓存
      */
     public DBMetaData loadMetadata() throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
@@ -87,6 +92,7 @@ public class DBScanner {
         tables.close();
         dbMetaData.setTables(new ArrayList<>(tableMap.values()));
         dbMetaData.success();
+        DBMetaContext.getInstance().update(dbMetaData);
         return dbMetaData;
     }
 
@@ -106,7 +112,7 @@ public class DBScanner {
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");
             String remarks = tables.getString("REMARKS");
-            if (dbMetaData.isUpdateTableMeta(tableName)) {
+            if (dbMetaData.isSubjectUpdate(tableName)) {
                 DbTable tableInfo = new DbTable(tableName, remarks);
                 this.loadDbTableInfo(tableName, tableInfo);
                 updateList.add(tableInfo);

@@ -7,23 +7,23 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * SQLStreamExecuteListener 下的线程上下文操作对象
+ * DBEventListener 下的线程上下文操作对象
  */
-class ThreadLocalContext {
+class DBEventCacheContext {
 
     /**
      * 缓存的数据，key 为index对应batch数据的顺序 value为 相应的事件解析对象
      */
     private final Map<Integer, DBEventParser> cache;
 
-    private final ThreadLocal<ThreadLocalContext> threadLocal = new ThreadLocal<>();
+    private final ThreadLocal<DBEventCacheContext> threadLocal = new ThreadLocal<>();
 
-    private ThreadLocalContext() {
+    private DBEventCacheContext() {
         this.cache = new ConcurrentHashMap<>();
     }
 
     @Getter
-    private final static ThreadLocalContext instance = new ThreadLocalContext();
+    private final static DBEventCacheContext instance = new DBEventCacheContext();
 
     public void remove() {
         this.threadLocal.remove();
@@ -34,9 +34,9 @@ class ThreadLocalContext {
     }
 
     public void push(int index, DBEventParser eventParser) {
-        ThreadLocalContext context = threadLocal.get();
+        DBEventCacheContext context = threadLocal.get();
         if (context == null) {
-            context = new ThreadLocalContext();
+            context = new DBEventCacheContext();
             threadLocal.set(context);
         }
         context.cache.put(index, eventParser);
@@ -47,7 +47,7 @@ class ThreadLocalContext {
     }
 
     public DBEventParser get(int index) {
-        ThreadLocalContext context = threadLocal.get();
+        DBEventCacheContext context = threadLocal.get();
         if (context == null) {
             return null;
         }

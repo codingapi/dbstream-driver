@@ -102,28 +102,29 @@ DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
 实现并注册 `SQLExecuteListener`，可以获取原始 SQL 和参数信息：
 
 ```java
-import com.codingapi.dbstream.DBStreamContext;
-import com.codingapi.dbstream.interceptor.SQLExecuteState;
+
+import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
 
 public class MySQLListener implements SQLExecuteListener {
 
     @Override
     public int order() {
+        // 执行顺序 小的在前，大的在后
         return 0;
-    }
-    
-    @Override
-    public void before(SQLExecuteState executeState) {
-        System.out.println("执行前 - SQL: " + executeState.getSql());
-        System.out.println("执行前 - 参数: " + executeState.getListParams());
     }
 
     @Override
-    public void after(SQLExecuteState executeState, Object result) {
-        System.out.println("执行后 - SQL: " + executeState.getSql());
-        System.out.println("执行后 - 参数: " + executeState.getListParams());
-        System.out.println("执行后 - 耗时: " + executeState.getExecuteTimestamp());
+    public void before(SQLRunningState runningState) {
+        System.out.println("执行前 - SQL: " + runningState.getSql());
+        System.out.println("执行前 - 参数: " + runningState.getListParams());
+    }
+
+    @Override
+    public void after(SQLRunningState runningState, Object result) {
+        System.out.println("执行后 - SQL: " + runningState.getSql());
+        System.out.println("执行后 - 参数: " + runningState.getListParams());
+        System.out.println("执行后 - 耗时: " + runningState.getExecuteTimestamp());
         System.out.println("执行后 - 结果: " + result);
     }
 }
@@ -224,8 +225,8 @@ List<DBMetaData> metaDataList = DBStreamContext.getInstance().metaDataList();
 // 通过 jdbcKey 获取指定数据库的元数据信息
 DBMetaData metaData = DBStreamContext.getInstance().getMetaData(String jdbcKey);
 
-// 主动更新表的元数据信息，在使用改变时将会先更新metadata然后再执行业务。（动态更新表的元数据）
-metaData.addUpdateTableMateList(String tableName);
+// 添加数据表更新订阅，当执行对应表的数据事件分析时将会自动更新同步该表的元数据信息到DBMetaData数据中。
+metaData.addUpdateSubscribe(String tableName);
 
 // 获取所有已缓存的数据库连接 jdbcKey 列表
 List<String> dbKeys = DBStreamContext.getInstance().loadDbKeys();
@@ -245,6 +246,7 @@ DBStreamContext.getInstance().clearAll();
 - `type`: 操作类型（INSERT/UPDATE/DELETE）
 - `data`: 变更的数据（Map 格式，key 为字段名，value 为字段值）
 - `primaryKeys`: 主键列表
+- `jdbcKey`: 数据库唯一标识
 - `jdbcUrl`: 数据库连接 URL
 - `transactionKey`: 事务标识（同一事务内的操作共享相同标识）
 - `timestamp`: 事件产生时间戳

@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.interceptor;
+package com.codingapi.dbstream.listener;
 
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.query.JdbcQuery;
@@ -16,22 +16,22 @@ import java.sql.Statement;
 import java.util.*;
 
 /**
- * 数据库的执行状态
+ * SQL执行状态
  */
-public class SQLExecuteState {
+public class SQLRunningState {
 
     /**
-     * 执行SQL队列
+     * 执行SQL参数队列
      */
-    private final List<SQLExecuteParam> sqlExecuteParams;
+    private final List<SQLRunningParam> sqlRunningParams;
 
     /**
-     * 当前执行对象
+     * 当前执行SQL的参数对象
      */
-    private SQLExecuteParam currentExecute;
+    private SQLRunningParam currentParam;
 
     /**
-     * 模式判断
+     * 批量模式标识
      */
     @Getter
     private boolean batchMode = false;
@@ -81,29 +81,29 @@ public class SQLExecuteState {
     private long afterTimestamp;
 
     /**
-     * JDBC数据查询
+     * JDBC数据查询对象
      */
     @Getter
     private final JdbcQuery jdbcQuery;
 
 
-    public SQLExecuteState(String sql, ConnectionProxy connectionProxy, Statement statement, DBMetaData metaData) {
+    public SQLRunningState(String sql, ConnectionProxy connectionProxy, Statement statement, DBMetaData metaData) {
         this.sql = sql;
         this.connectionProxy = connectionProxy;
         this.statement = statement;
         this.jdbcQuery = new JdbcQuery(connectionProxy);
         this.metaData = metaData;
-        this.sqlExecuteParams = new ArrayList<>();
+        this.sqlRunningParams = new ArrayList<>();
 
-        this.currentExecute = new SQLExecuteParam();
-        this.currentExecute.setSql(sql);
-        this.sqlExecuteParams.add(currentExecute);
+        this.currentParam = new SQLRunningParam();
+        this.currentParam.setSql(sql);
+        this.sqlRunningParams.add(currentParam);
     }
 
     public void setSql(String sql) {
         this.sql = sql;
-        if (this.currentExecute != null) {
-            this.currentExecute.setSql(sql);
+        if (this.currentParam != null) {
+            this.currentParam.setSql(sql);
         }
     }
 
@@ -114,10 +114,10 @@ public class SQLExecuteState {
      */
     public void addBatch(String sql) {
         batchMode = true;
-        SQLExecuteParam executeParam = new SQLExecuteParam();
+        SQLRunningParam executeParam = new SQLRunningParam();
         executeParam.setSql(sql);
-        this.sqlExecuteParams.add(executeParam);
-        this.currentExecute = executeParam;
+        this.sqlRunningParams.add(executeParam);
+        this.currentParam = executeParam;
     }
 
     /**
@@ -132,16 +132,16 @@ public class SQLExecuteState {
      * 清空队列
      */
     public void clearBatch() {
-        this.sqlExecuteParams.clear();
-        this.currentExecute = null;
+        this.sqlRunningParams.clear();
+        this.currentParam = null;
     }
 
     /**
      * 清理参数设置
      */
     public void cleanParams() {
-        if (this.currentExecute != null) {
-            this.currentExecute.cleanParams();
+        if (this.currentParam != null) {
+            this.currentParam.cleanParams();
         }
     }
 
@@ -176,8 +176,8 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(String key, Object value) {
-        if (this.currentExecute != null) {
-            currentExecute.setParam(key, value);
+        if (this.currentParam != null) {
+            currentParam.setParam(key, value);
         }
     }
 
@@ -188,8 +188,8 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(int index, Object value) {
-        if (this.currentExecute != null) {
-            currentExecute.setParam(index, value);
+        if (this.currentParam != null) {
+            currentParam.setParam(index, value);
         }
     }
 
@@ -200,35 +200,35 @@ public class SQLExecuteState {
      */
     public List<Object> getListParams() {
         if (batchMode) {
-            if (this.sqlExecuteParams.isEmpty()) {
+            if (this.sqlRunningParams.isEmpty()) {
                 return new ArrayList<>();
             }
-            int size = this.sqlExecuteParams.size();
-            return this.sqlExecuteParams.get(size - 2).getListParams();
+            int size = this.sqlRunningParams.size();
+            return this.sqlRunningParams.get(size - 2).getListParams();
         }
-        if (this.currentExecute != null) {
-            return currentExecute.getListParams();
+        if (this.currentParam != null) {
+            return currentParam.getListParams();
         }
         return new ArrayList<>();
     }
 
 
     /**
-     * 获取Batch的SQLExecuteState
+     * 获取Batch的SQLRunningState
      *
      * @return List
      */
-    public List<SQLExecuteState> getBatchSQLExecuteStateList() {
+    public List<SQLRunningState> getBatchSQLRunningStateList() {
         if (this.batchMode) {
-            if (this.sqlExecuteParams.isEmpty()) {
+            if (this.sqlRunningParams.isEmpty()) {
                 return new ArrayList<>();
             }
-            int size = this.sqlExecuteParams.size();
-            List<SQLExecuteState> list = new ArrayList<>();
-            List<SQLExecuteParam> paramList = this.sqlExecuteParams.subList(0, size - 1);
-            for (SQLExecuteParam executeParam : paramList) {
-                SQLExecuteState executeState = new SQLExecuteState(executeParam.getSql(), connectionProxy, statement, metaData);
-                executeState.currentExecute = executeParam;
+            int size = this.sqlRunningParams.size();
+            List<SQLRunningState> list = new ArrayList<>();
+            List<SQLRunningParam> paramList = this.sqlRunningParams.subList(0, size - 1);
+            for (SQLRunningParam executeParam : paramList) {
+                SQLRunningState executeState = new SQLRunningState(executeParam.getSql(), connectionProxy, statement, metaData);
+                executeState.currentParam = executeParam;
                 list.add(executeState);
             }
             return list;
@@ -357,7 +357,7 @@ public class SQLExecuteState {
      */
     public void triggerDBMetaData(String tableName) throws SQLException {
         // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
-        if (this.metaData.isUpdateTableMeta(tableName)) {
+        if (this.metaData.isSubjectUpdate(tableName)) {
             DBScanner dbScanner = new DBScanner(connectionProxy.getConnection(), getDriverProperties());
             dbScanner.updateMetadata(this.metaData);
         }

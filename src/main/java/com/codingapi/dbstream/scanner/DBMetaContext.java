@@ -39,7 +39,7 @@ public class DBMetaContext {
      *
      * @param metaData 元数据信息
      */
-    public void update(DBMetaData metaData) {
+    void update(DBMetaData metaData) {
         this.cache.put(metaData.getKeyJdbcKey(), metaData);
     }
 

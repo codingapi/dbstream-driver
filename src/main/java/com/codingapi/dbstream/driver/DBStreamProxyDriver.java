@@ -1,9 +1,9 @@
 package com.codingapi.dbstream.driver;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteListenerContext;
-import com.codingapi.dbstream.listener.dbevent.SQLDeleteExecuteListener;
-import com.codingapi.dbstream.listener.dbevent.SQLInsertExecuteListener;
-import com.codingapi.dbstream.listener.dbevent.SQLUpdateExecuteListener;
+import com.codingapi.dbstream.listener.SQLRunningContext;
+import com.codingapi.dbstream.listener.dbevent.DeleteEventListener;
+import com.codingapi.dbstream.listener.dbevent.InsertEventListener;
+import com.codingapi.dbstream.listener.dbevent.UpdateEventListener;
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
@@ -30,9 +30,9 @@ public class DBStreamProxyDriver implements Driver {
             LOGGER.log(Level.SEVERE, "Failed to register DBStreamProxyDriver", e);
             throw new RuntimeException("Failed to register DBStreamProxyDriver", e);
         }
-        SQLExecuteListenerContext.getInstance().addListener(new SQLDeleteExecuteListener());
-        SQLExecuteListenerContext.getInstance().addListener(new SQLInsertExecuteListener());
-        SQLExecuteListenerContext.getInstance().addListener(new SQLUpdateExecuteListener());
+        SQLRunningContext.getInstance().addListener(new DeleteEventListener());
+        SQLRunningContext.getInstance().addListener(new InsertEventListener());
+        SQLRunningContext.getInstance().addListener(new UpdateEventListener());
         LOGGER.info("DBStreamProxyDriver initialized and registered");
     }
 
@@ -108,7 +108,6 @@ public class DBStreamProxyDriver implements Driver {
         if (metaData == null) {
             DBScanner scanner = new DBScanner(connection, info);
             metaData = scanner.loadMetadata();
-            DBMetaContext.getInstance().update(metaData);
         }
         return new ConnectionProxy(connection, metaData);
     }

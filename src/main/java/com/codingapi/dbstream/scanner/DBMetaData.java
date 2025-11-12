@@ -1,12 +1,13 @@
 package com.codingapi.dbstream.scanner;
 
 import com.codingapi.dbstream.serializable.DBTableSerializableHelper;
-import com.codingapi.dbstream.utils.SHA256Utils;
 import lombok.Getter;
 
 import java.util.*;
 
-
+/**
+ * 数据库所有表的元数据信息
+ */
 public class DBMetaData {
 
     public static final String KEY_JDBC_URL = "jdbc.url";
@@ -16,7 +17,7 @@ public class DBMetaData {
      * 待更新的table meta数据
      */
     @Getter
-    private final List<String> updateTableMetaList = new ArrayList<>();
+    private final List<String> subjectTableNameList = new ArrayList<>();
 
     /**
      * 数据记录时间
@@ -41,22 +42,30 @@ public class DBMetaData {
     }
 
     /**
-     * 更新表的元数据信息
+     * 添加元数据信息更新订阅
+     * 当增加数据之后，将会再下次执行改变的数据事件分析前，进行元数据的重新加载。
+     * 对新增加的表，也可通过该还是
      *
      * @param tableName 表名称
      */
-    public void addUpdateTableMateList(String tableName) {
+    public void addUpdateSubscribe(String tableName) {
         String upTableName = tableName.toUpperCase();
-        if (!this.updateTableMetaList.contains(upTableName)) {
-            this.updateTableMetaList.add(upTableName);
+        if (!this.subjectTableNameList.contains(upTableName)) {
+            this.subjectTableNameList.add(upTableName);
         }
     }
 
+    /**
+     * 更新全部元数据信息
+     */
     void setTables(List<DbTable> tables) {
         this.tables = tables;
     }
 
-    public void success() {
+    /**
+     * 记录数据更新时间
+     */
+    void success() {
         updateTime = System.currentTimeMillis();
     }
 
@@ -88,8 +97,9 @@ public class DBMetaData {
      */
     void cleanSerializable() {
         DBTableSerializableHelper tableSerializableHelper = new DBTableSerializableHelper(this.getKeyJdbcKey());
-        tableSerializableHelper.clean();
-        this.tables = null;
+        tableSerializableHelper.remove();
+        this.tables.clear();
+        this.subjectTableNameList.clear();
     }
 
     /**
@@ -117,13 +127,13 @@ public class DBMetaData {
     }
 
     /**
-     * 是否为待更新的数据库表
+     * 是否为订阅数据更新
      *
      * @param tableName 表名称
      * @return true 是
      */
-    public boolean isUpdateTableMeta(String tableName) {
-        return this.updateTableMetaList.contains(tableName.toUpperCase());
+    public boolean isSubjectUpdate(String tableName) {
+        return this.subjectTableNameList.contains(tableName.toUpperCase());
     }
 
     /**
@@ -142,7 +152,7 @@ public class DBMetaData {
         for (DbTable update : updateList) {
             String tableName = update.getName().toUpperCase();
             updateDbTables.put(tableName, update);
-            this.updateTableMetaList.remove(tableName);
+            this.subjectTableNameList.remove(tableName);
         }
 
         for (DbTable dbTable : tables) {
