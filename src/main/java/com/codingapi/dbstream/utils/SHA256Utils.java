@@ -3,6 +3,9 @@ package com.codingapi.dbstream.utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
+/**
+ * SHA256 函数类
+ */
 public class SHA256Utils {
 
     public static String sha256(String text) {

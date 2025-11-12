@@ -1,12 +1,12 @@
 package com.codingapi.dbstream.parser;
 
-import com.codingapi.dbstream.stream.DBEvent;
+import com.codingapi.dbstream.event.DBEvent;
 
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- *  DBEvent 事件解析
+ * DBEvent 事件解析
  */
 public interface DBEventParser {
 
@@ -17,6 +17,7 @@ public interface DBEventParser {
 
     /**
      * 加载DBEvent事件数据
+     *
      * @param result sql执行结果返回值
      * @return List<DBEvent>
      */

@@ -8,6 +8,7 @@ public interface SQLExecuteListener {
 
     /**
      * 执行顺序，越小越靠前
+     *
      * @return index
      */
     int order();

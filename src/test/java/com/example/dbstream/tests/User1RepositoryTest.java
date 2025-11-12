@@ -5,8 +5,10 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.example.dbstream.entity.User1;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User1Repository;
+
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,13 +177,13 @@ class User1RepositoryTest {
     @Rollback(value = false)
     void test8() {
         List<User1> list = userRepository.findAll();
-        for (User1 user:list){
+        for (User1 user : list) {
             user.setEmail("111");
         }
         userRepository.saveAll(list);
 
         userRepository.deleteAll();
-        for (int i=0;i<5;i++){
+        for (int i = 0; i < 5; i++) {
             User1 user1 = new User1();
             user1.setUsername("admin1");
             user1.setPassword("admin1");

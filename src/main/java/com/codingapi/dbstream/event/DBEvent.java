@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.stream;
+package com.codingapi.dbstream.event;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 
+/**
+ * 数据变更事件
+ */
 @Getter
 public class DBEvent {
 
@@ -70,7 +73,7 @@ public class DBEvent {
                 '}';
     }
 
-    public DBEvent(String jdbcUrl,String jdbcKey, String tableName, EventType type) {
+    public DBEvent(String jdbcUrl, String jdbcKey, String tableName, EventType type) {
         this.jdbcKey = jdbcKey;
         this.jdbcUrl = jdbcUrl;
         this.data = new HashMap<>();
@@ -89,14 +92,14 @@ public class DBEvent {
     }
 
     public void addPrimaryKey(String primaryKey) {
-        if(!this.primaryKeys.contains(primaryKey)) {
+        if (!this.primaryKeys.contains(primaryKey)) {
             this.primaryKeys.add(primaryKey);
         }
     }
 
 
-    public boolean hasPrimaryKeys(){
-        return this.primaryKeys!=null && !this.primaryKeys.isEmpty();
+    public boolean hasPrimaryKeys() {
+        return this.primaryKeys != null && !this.primaryKeys.isEmpty();
     }
 
 }

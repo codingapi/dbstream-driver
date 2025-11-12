@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class UpdateSQLParser implements SQLParser{
+public class UpdateSQLParser implements SQLParser {
 
     private final String sql;
 

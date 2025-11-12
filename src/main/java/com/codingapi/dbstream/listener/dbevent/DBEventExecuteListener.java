@@ -1,18 +1,18 @@
-package com.codingapi.dbstream.listener.stream;
+package com.codingapi.dbstream.listener.dbevent;
 
 import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
 import com.codingapi.dbstream.parser.*;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.TransactionEventPools;
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.TransactionEventPools;
 
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- *  数据事件解析监听对象
+ * 数据事件解析监听对象
  */
 public abstract class DBEventExecuteListener implements SQLExecuteListener {
 
@@ -29,7 +29,7 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
     /**
      * 构建对应处理的事件解析对象
      */
-    public abstract DBEventParser createDbEventParser(SQLExecuteState sqlExecuteState,SQLParser sqlParser,DbTable dbTable);
+    public abstract DBEventParser createDbEventParser(SQLExecuteState sqlExecuteState, SQLParser sqlParser, DbTable dbTable);
 
     @Override
     public void before(SQLExecuteState executeState) throws SQLException {
@@ -54,7 +54,7 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
                         List<SQLExecuteState> executeStateList = executeState.getBatchSQLExecuteStateList();
                         for (int i = 0; i < executeStateList.size(); i++) {
                             SQLExecuteState sqlExecuteState = executeStateList.get(i);
-                            DBEventParser dataParser = this.createDbEventParser(sqlExecuteState,sqlParser,dbTable);
+                            DBEventParser dataParser = this.createDbEventParser(sqlExecuteState, sqlParser, dbTable);
                             // DB事件解析前置
                             dataParser.prepare();
                             // 存储到本地线程
@@ -62,7 +62,7 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
                         }
                     } else {
                         // 非批量模式执行
-                        DBEventParser dataParser = this.createDbEventParser(executeState,sqlParser,dbTable);
+                        DBEventParser dataParser = this.createDbEventParser(executeState, sqlParser, dbTable);
                         // DB事件解析前置
                         dataParser.prepare();
                         // 存储到本地线程

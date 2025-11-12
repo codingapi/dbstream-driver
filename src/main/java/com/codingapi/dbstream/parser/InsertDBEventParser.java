@@ -3,8 +3,8 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.EventType;
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.EventType;
 import com.codingapi.dbstream.utils.ResultSetUtils;
 import com.codingapi.dbstream.utils.SQLUtils;
 
@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class InsertDBEventParser implements DBEventParser{
+public class InsertDBEventParser implements DBEventParser {
 
     private final InsertSQLParser sqlParser;
     private final SQLExecuteState executeState;
@@ -50,7 +50,7 @@ public class InsertDBEventParser implements DBEventParser{
 
         // 插入拦截到的数据
         for (Map<String, Object> data : dataList) {
-            DBEvent event = new DBEvent(jdbcUrl,jdbcKey, this.dbTable.getName(), EventType.INSERT);
+            DBEvent event = new DBEvent(jdbcUrl, jdbcKey, this.dbTable.getName(), EventType.INSERT);
             for (String key : data.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {
@@ -64,10 +64,10 @@ public class InsertDBEventParser implements DBEventParser{
         }
 
         // 放入自动生成的数据
-        if(!generateValues.isEmpty()) {
-            for(int i=0;i<generateValues.size();i++){
+        if (!generateValues.isEmpty()) {
+            for (int i = 0; i < generateValues.size(); i++) {
                 Map<String, Object> generateValue = generateValues.get(i);
-                DBEvent event  = eventList.get(i);
+                DBEvent event = eventList.get(i);
                 for (String key : generateValue.keySet()) {
                     DbColumn dbColumn = dbTable.getColumnByName(key);
                     if (dbColumn != null) {
@@ -98,7 +98,7 @@ public class InsertDBEventParser implements DBEventParser{
 
     private void loadSelectInsertDataList() throws SQLException {
         String query = this.sqlParser.getValuesSQL();
-        int paramCount = SQLUtils.paramsCount(query);
+        int paramCount = SQLUtils.jdbcParamsCount(query);
         List<Object> listParams = this.executeState.getListParams();
         List<Object> queryParams = new ArrayList<>();
         for (int i = 0; i < listParams.size(); i++) {

@@ -28,7 +28,7 @@ public class DBMetaContext {
      * @return 元数据信息
      */
     public DBMetaData getMetaData(String key) {
-        if(key==null){
+        if (key == null) {
             return null;
         }
         return cache.get(key);

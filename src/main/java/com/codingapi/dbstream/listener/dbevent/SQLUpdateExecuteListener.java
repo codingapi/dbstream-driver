@@ -1,14 +1,14 @@
-package com.codingapi.dbstream.listener.stream;
+package com.codingapi.dbstream.listener.dbevent;
 
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.parser.DBEventParser;
-import com.codingapi.dbstream.parser.DeleteDBEventParser;
-import com.codingapi.dbstream.parser.DeleteSQLParser;
 import com.codingapi.dbstream.parser.SQLParser;
+import com.codingapi.dbstream.parser.UpdateDBEventParser;
+import com.codingapi.dbstream.parser.UpdateSQLParser;
 import com.codingapi.dbstream.scanner.DbTable;
 import com.codingapi.dbstream.utils.SQLUtils;
 
-public class SQLDeleteExecuteListener extends DBEventExecuteListener {
+public class SQLUpdateExecuteListener extends DBEventExecuteListener {
 
     @Override
     public int order() {
@@ -17,17 +17,17 @@ public class SQLDeleteExecuteListener extends DBEventExecuteListener {
 
     @Override
     public boolean support(String sql) {
-        return SQLUtils.isDeleteSQL(sql);
+        return SQLUtils.isUpdateSQL(sql);
     }
 
     @Override
     public SQLParser createSQLParser(String sql) {
-        return new DeleteSQLParser(sql);
+        return new UpdateSQLParser(sql);
     }
 
     @Override
     public DBEventParser createDbEventParser(SQLExecuteState sqlExecuteState, SQLParser sqlParser, DbTable dbTable) {
-        return new DeleteDBEventParser(sqlExecuteState, (DeleteSQLParser) sqlParser, dbTable);
+        return new UpdateDBEventParser(sqlExecuteState, (UpdateSQLParser) sqlParser, dbTable);
     }
 
 }

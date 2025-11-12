@@ -1,8 +1,7 @@
 package com.codingapi.dbstream.proxy;
 
-
 import com.codingapi.dbstream.scanner.DBMetaData;
-import com.codingapi.dbstream.stream.TransactionEventPools;
+import com.codingapi.dbstream.event.TransactionEventPools;
 import lombok.Getter;
 
 import java.sql.*;

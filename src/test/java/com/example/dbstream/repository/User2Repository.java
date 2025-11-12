@@ -29,7 +29,7 @@ public interface User2Repository extends JpaRepository<User2, Long> {
     int resetPasswordByUsername1(String username);
 
     @Modifying
-    @Query(value = "INSERT INTO m_user_2 (id,email,username,password,nickname) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM m_user_2),'123','123','123','123')",nativeQuery = true)
+    @Query(value = "INSERT INTO m_user_2 (id,email,username,password,nickname) VALUES ((SELECT COALESCE(MAX(id), 0) + 1 FROM m_user_2),'123','123','123','123')", nativeQuery = true)
     int staticSave();
 
 

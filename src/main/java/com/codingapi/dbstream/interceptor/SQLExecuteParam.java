@@ -15,7 +15,7 @@ public class SQLExecuteParam {
      * SQL参数,integer index模式
      */
     @Getter
-    private final Map<Integer,Object> indexParams;
+    private final Map<Integer, Object> indexParams;
     /**
      * SQL参数,string key 模型
      */
@@ -58,23 +58,24 @@ public class SQLExecuteParam {
     /**
      * 清理参数
      */
-    public void cleanParams(){
+    public void cleanParams() {
         this.indexParams.clear();
         this.mapParams.clear();
     }
 
     /**
      * 获取参数列表
+     *
      * @return List
      */
-    public List<Object> getListParams(){
+    public List<Object> getListParams() {
         List<Object> list = new ArrayList<>();
         if (indexParams.isEmpty()) {
             return list;
         }
         List<Integer> keys = new ArrayList<>(indexParams.keySet());
         Collections.sort(keys);
-        for(Integer key: keys){
+        for (Integer key : keys) {
             list.add(indexParams.get(key));
         }
         return list;

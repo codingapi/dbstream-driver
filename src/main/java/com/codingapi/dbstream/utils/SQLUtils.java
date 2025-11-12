@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * SQL处理工具类
+ */
 public class SQLUtils {
 
     private static final Pattern DELETE_SQL_PATTERN = Pattern.compile(
@@ -23,7 +26,10 @@ public class SQLUtils {
             Pattern.DOTALL
     );
 
-    public static int paramsCount(String sql) {
+    /**
+     * JDBC参数数量
+     */
+    public static int jdbcParamsCount(String sql) {
         if (sql == null || sql.isEmpty()) {
             return 0;
         }
@@ -53,6 +59,9 @@ public class SQLUtils {
         return s;
     }
 
+    /**
+     * sql 格式化
+     */
     public static String normalize(String sql) {
         if (sql == null) return "";
         // collapse multi-space, keep original case for returned where clause but use case-insensitive regex
@@ -71,7 +80,10 @@ public class SQLUtils {
         return null;
     }
 
-    public static List<String> parseValues(String sqlValues) {
+    /**
+     *  提取insert语句中values的内容
+     */
+    public static List<String> parseInsertSQLValues(String sqlValues) {
         List<String> result = new ArrayList<>();
         StringBuilder current = new StringBuilder();
 
@@ -138,6 +150,9 @@ public class SQLUtils {
     }
 
 
+    /**
+     * 是否update SQL
+     */
     public static boolean isUpdateSQL(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             return false;
@@ -145,6 +160,9 @@ public class SQLUtils {
         return UPDATE_SQL_PATTERN.matcher(sql.trim()).matches();
     }
 
+    /**
+     * 是否insert SQL
+     */
     public static boolean isInsertSQL(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             return false;
@@ -152,12 +170,14 @@ public class SQLUtils {
         return INSERT_SQL_PATTERN.matcher(sql.trim()).matches();
     }
 
+    /**
+     * 是否delete SQL
+     */
     public static boolean isDeleteSQL(String sql) {
         if (sql == null || sql.trim().isEmpty()) {
             return false;
         }
         return DELETE_SQL_PATTERN.matcher(sql.trim()).matches();
     }
-
 
 }

@@ -10,11 +10,11 @@ class DeleteSQLParserTest {
 
 
     @ParameterizedTest
-    @CsvFileSource(resources = "delete.sql.csv",numLinesToSkip = 1,delimiterString = "|")
-    void delete(String sql,String table,String alias,String where){
+    @CsvFileSource(resources = "delete.sql.csv", numLinesToSkip = 1, delimiterString = "|")
+    void delete(String sql, String table, String alias, String where) {
         DeleteSQLParser p = new DeleteSQLParser(sql);
-        assertEquals(p.getWhereSQL(),where);
-        assertEquals(p.getTableName(),table);
-        assertEquals(p.getTableAlias(),alias);
+        assertEquals(p.getWhereSQL(), where);
+        assertEquals(p.getTableName(), table);
+        assertEquals(p.getTableAlias(), alias);
     }
 }

@@ -2,13 +2,13 @@ package com.codingapi.dbstream;
 
 import com.codingapi.dbstream.interceptor.SQLExecuteListenerContext;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
-import com.codingapi.dbstream.provider.DBTableSupportProvider;
-import com.codingapi.dbstream.provider.DefaultDBTableSupportProvider;
+import com.codingapi.dbstream.supporter.DBEventSupporter;
+import com.codingapi.dbstream.supporter.DefaultDBEventSupporter;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.stream.DBEventContext;
-import com.codingapi.dbstream.stream.DBEventPusher;
+import com.codingapi.dbstream.event.DBEventContext;
+import com.codingapi.dbstream.event.DBEventPusher;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +24,7 @@ public class DBStreamContext {
     private final static DBStreamContext instance = new DBStreamContext();
 
     @Setter
-    private DBTableSupportProvider dbTableSupportProvider;
+    private DBEventSupporter dbEventSupporter;
 
 
     private DBStreamContext() {
@@ -48,11 +48,11 @@ public class DBStreamContext {
      * @return 是否支持
      */
     public boolean support(Properties info, DbTable dbTable) {
-        if (dbTableSupportProvider == null) {
-            this.dbTableSupportProvider = new DefaultDBTableSupportProvider();
+        if (dbEventSupporter == null) {
+            this.dbEventSupporter = new DefaultDBEventSupporter();
         }
         if (dbTable.hasColumns() && dbTable.hasPrimaryKeys()) {
-            return dbTableSupportProvider.support(info, dbTable);
+            return dbEventSupporter.support(info, dbTable);
         } else {
             return false;
         }

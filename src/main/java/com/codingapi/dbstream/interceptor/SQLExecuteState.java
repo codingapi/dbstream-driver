@@ -89,9 +89,9 @@ public class SQLExecuteState {
         this.sqlExecuteParams.add(currentExecute);
     }
 
-    public void setSql(String sql){
+    public void setSql(String sql) {
         this.sql = sql;
-        if(this.currentExecute!=null) {
+        if (this.currentExecute != null) {
             this.currentExecute.setSql(sql);
         }
     }
@@ -128,8 +128,8 @@ public class SQLExecuteState {
     /**
      * 清理参数设置
      */
-    public void cleanParams(){
-        if(this.currentExecute!=null) {
+    public void cleanParams() {
+        if (this.currentExecute != null) {
             this.currentExecute.cleanParams();
         }
     }
@@ -165,7 +165,7 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(String key, Object value) {
-        if(this.currentExecute!=null) {
+        if (this.currentExecute != null) {
             currentExecute.setParam(key, value);
         }
     }
@@ -177,7 +177,7 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(int index, Object value) {
-        if(this.currentExecute!=null) {
+        if (this.currentExecute != null) {
             currentExecute.setParam(index, value);
         }
     }
@@ -188,14 +188,14 @@ public class SQLExecuteState {
      * @return List
      */
     public List<Object> getListParams() {
-        if(batchMode){
-            if(this.sqlExecuteParams.isEmpty()){
+        if (batchMode) {
+            if (this.sqlExecuteParams.isEmpty()) {
                 return new ArrayList<>();
             }
             int size = this.sqlExecuteParams.size();
-            return this.sqlExecuteParams.get(size-2).getListParams();
+            return this.sqlExecuteParams.get(size - 2).getListParams();
         }
-        if(this.currentExecute!=null) {
+        if (this.currentExecute != null) {
             return currentExecute.getListParams();
         }
         return new ArrayList<>();
@@ -204,18 +204,19 @@ public class SQLExecuteState {
 
     /**
      * 获取Batch的SQLExecuteState
+     *
      * @return List
      */
-    public List<SQLExecuteState> getBatchSQLExecuteStateList(){
-        if(this.batchMode){
-            if(this.sqlExecuteParams.isEmpty()){
+    public List<SQLExecuteState> getBatchSQLExecuteStateList() {
+        if (this.batchMode) {
+            if (this.sqlExecuteParams.isEmpty()) {
                 return new ArrayList<>();
             }
             int size = this.sqlExecuteParams.size();
             List<SQLExecuteState> list = new ArrayList<>();
-            List<SQLExecuteParam> paramList = this.sqlExecuteParams.subList(0,size-1);
-            for(SQLExecuteParam executeParam:paramList){
-                SQLExecuteState executeState = new SQLExecuteState(executeParam.getSql(), connectionProxy,statement,metaData);
+            List<SQLExecuteParam> paramList = this.sqlExecuteParams.subList(0, size - 1);
+            for (SQLExecuteParam executeParam : paramList) {
+                SQLExecuteState executeState = new SQLExecuteState(executeParam.getSql(), connectionProxy, statement, metaData);
                 executeState.currentExecute = executeParam;
                 list.add(executeState);
             }

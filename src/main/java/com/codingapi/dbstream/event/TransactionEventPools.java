@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.stream;
+package com.codingapi.dbstream.event;
 
 import lombok.Getter;
 
@@ -21,15 +21,24 @@ public class TransactionEventPools {
     }
 
 
+    /**
+     * 自动提交模式设置
+     */
     public void setAutoCommit(boolean autoCommit) {
         autoMode.set(autoCommit);
     }
 
+    /**
+     * 是否自动提交
+     */
     public boolean isAutoCommit() {
         return autoMode.get() != null && autoMode.get();
     }
 
 
+    /**
+     * 添加事务事件
+     */
     public void addEvents(String transactionKey, List<DBEvent> events) {
         List<DBEvent> currentEvents = pools.get();
         if (currentEvents == null) {

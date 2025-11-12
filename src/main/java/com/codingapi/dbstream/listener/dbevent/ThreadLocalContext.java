@@ -1,4 +1,4 @@
-package com.codingapi.dbstream.listener.stream;
+package com.codingapi.dbstream.listener.dbevent;
 
 import com.codingapi.dbstream.parser.DBEventParser;
 import lombok.Getter;
@@ -18,28 +18,28 @@ class ThreadLocalContext {
 
     private final ThreadLocal<ThreadLocalContext> threadLocal = new ThreadLocal<>();
 
-    private ThreadLocalContext(){
+    private ThreadLocalContext() {
         this.cache = new ConcurrentHashMap<>();
     }
 
     @Getter
     private final static ThreadLocalContext instance = new ThreadLocalContext();
 
-    public void remove(){
+    public void remove() {
         this.threadLocal.remove();
     }
 
-    public void push(DBEventParser eventParser){
-        this.push(0,eventParser);
+    public void push(DBEventParser eventParser) {
+        this.push(0, eventParser);
     }
 
-    public void push(int index,DBEventParser eventParser){
+    public void push(int index, DBEventParser eventParser) {
         ThreadLocalContext context = threadLocal.get();
-        if(context==null){
+        if (context == null) {
             context = new ThreadLocalContext();
             threadLocal.set(context);
         }
-        context.cache.put(index,eventParser);
+        context.cache.put(index, eventParser);
     }
 
     public DBEventParser get() {
@@ -48,7 +48,7 @@ class ThreadLocalContext {
 
     public DBEventParser get(int index) {
         ThreadLocalContext context = threadLocal.get();
-        if(context==null){
+        if (context == null) {
             return null;
         }
         return context.cache.get(index);

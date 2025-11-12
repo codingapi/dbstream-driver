@@ -1,10 +1,13 @@
-package com.codingapi.dbstream.stream;
+package com.codingapi.dbstream.event;
 
 import lombok.Getter;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * 事件控制上下文对象
+ */
 public class DBEventContext {
 
     private final List<DBEventPusher> pushers = new CopyOnWriteArrayList<>();

@@ -3,8 +3,8 @@ package com.codingapi.dbstream.parser;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.EventType;
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.EventType;
 import com.codingapi.dbstream.utils.ResultSetUtils;
 import com.codingapi.dbstream.utils.SQLUtils;
 
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteDBEventParser  implements DBEventParser {
+public class DeleteDBEventParser implements DBEventParser {
 
     private final DeleteSQLParser sqlParser;
     private final SQLExecuteState executeState;
@@ -88,7 +88,7 @@ public class DeleteDBEventParser  implements DBEventParser {
             beforeSQL = nativeSQL;
         }
 
-        int paramsSize = SQLUtils.paramsCount(beforeSQL);
+        int paramsSize = SQLUtils.jdbcParamsCount(beforeSQL);
 
         List<Object> paramsList = this.executeState.getListParams();
         for (int i = 0; i < paramsList.size(); i++) {
@@ -111,12 +111,12 @@ public class DeleteDBEventParser  implements DBEventParser {
         String jdbcKey = this.executeState.getJdbcKey();
 
         for (Map<String, Object> params : this.prepareList) {
-            DBEvent event = new DBEvent(jdbcUrl,jdbcKey, this.dbTable.getName(), EventType.DELETE);
+            DBEvent event = new DBEvent(jdbcUrl, jdbcKey, this.dbTable.getName(), EventType.DELETE);
             for (String key : params.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {
                     event.set(dbColumn.getName(), params.get(key));
-                    if(dbColumn.isPrimaryKey()) {
+                    if (dbColumn.isPrimaryKey()) {
                         event.addPrimaryKey(dbColumn.getName());
                     }
                 }

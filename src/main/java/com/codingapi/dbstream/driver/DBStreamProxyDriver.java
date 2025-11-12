@@ -1,14 +1,14 @@
 package com.codingapi.dbstream.driver;
 
 import com.codingapi.dbstream.interceptor.SQLExecuteListenerContext;
-import com.codingapi.dbstream.listener.stream.SQLDeleteExecuteListener;
-import com.codingapi.dbstream.listener.stream.SQLInsertExecuteListener;
-import com.codingapi.dbstream.listener.stream.SQLUpdateExecuteListener;
+import com.codingapi.dbstream.listener.dbevent.SQLDeleteExecuteListener;
+import com.codingapi.dbstream.listener.dbevent.SQLInsertExecuteListener;
+import com.codingapi.dbstream.listener.dbevent.SQLUpdateExecuteListener;
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.scanner.DBScanner;
-import com.codingapi.dbstream.utils.JDBCPropertyUtils;
+import com.codingapi.dbstream.utils.JdbcPropertyUtils;
 
 import java.sql.*;
 import java.util.Enumeration;
@@ -103,7 +103,7 @@ public class DBStreamProxyDriver implements Driver {
             throw new SQLException("Driver returned null connection for URL: " + url);
         }
         info.setProperty(DBMetaData.KEY_JDBC_URL, url);
-        String jdbcKey = JDBCPropertyUtils.getJdbcKey(info,connection.getSchema());
+        String jdbcKey = JdbcPropertyUtils.getOrGenerateJdbcKey(info, connection.getSchema());
         DBMetaData metaData = DBMetaContext.getInstance().getMetaData(jdbcKey);
         if (metaData == null) {
             DBScanner scanner = new DBScanner(connection, info);

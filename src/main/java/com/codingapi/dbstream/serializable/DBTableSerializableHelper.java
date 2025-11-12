@@ -14,11 +14,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * 元数据数据序列化助手
+ */
 public class DBTableSerializableHelper {
 
     private static final Logger LOGGER = Logger.getLogger(DBTableSerializableHelper.class.getName());
+
+    // 数据库序列化文件存储位置
     private final File path;
 
+    /**
+     * 构造函数
+     * @param jdbcKey 数据库的唯一标识
+     */
     public DBTableSerializableHelper(String jdbcKey) {
         this.path = new File("./.dbstream/" + jdbcKey + "/");
         if (!this.path.exists()) {
@@ -28,16 +37,22 @@ public class DBTableSerializableHelper {
         }
     }
 
+    /**
+     * 删除全部序列化文件
+     */
     public void clean() {
         if (path.exists() && path.isDirectory()) {
             deleteRecursively(path);
         }
     }
 
+    /**
+     * 通过表名称读取手动配置主键信息
+     */
     public List<String> loadPrimaryKeyByLocalFile(String tableName) {
         File file = new File(this.path + "/" + tableName + ".key");
-        List<String> data =  FileReaderUtils.read(file);
-        if(data!=null && !data.isEmpty()) {
+        List<String> data = FileReaderUtils.read(file);
+        if (data != null && !data.isEmpty()) {
             List<String> columns = new ArrayList<>();
             for (String line : data) {
                 columns.addAll(Arrays.asList(line.split(",")));
@@ -62,11 +77,17 @@ public class DBTableSerializableHelper {
         }
     }
 
+    /**
+     * 是否存在序列化的表数据
+     */
     public boolean hasSerialize(String tableName) {
         File file = new File(this.path.getPath() + "/" + tableName);
         return file.exists();
     }
 
+    /**
+     * 序列化表数据
+     */
     public void serialize(DbTable dbTable) {
         String fileName = dbTable.getName();
         try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(Paths.get(this.path + "/" + fileName)))) {
@@ -77,6 +98,9 @@ public class DBTableSerializableHelper {
     }
 
 
+    /**
+     * 反序列化数据
+     */
     public DbTable deserialize(String tableName) {
         File file = new File(this.path.getPath() + "/" + tableName);
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(file.toPath()))) {

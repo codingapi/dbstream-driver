@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class InsertSQLParser implements SQLParser{
+public class InsertSQLParser implements SQLParser {
 
     // 匹配 INSERT INTO table_name (...)
     private static final Pattern TABLE_NAME_PATTERN = Pattern.compile(
@@ -104,16 +104,16 @@ public class InsertSQLParser implements SQLParser{
     }
 
 
-    public List<InsertValue> getValues(){
+    public List<InsertValue> getValues() {
         List<InsertValue> insertValues = new ArrayList<>();
-        List<String> values = SQLUtils.parseValues(this.getValuesSQL());
-        for(String value:values){
+        List<String> values = SQLUtils.parseInsertSQLValues(this.getValuesSQL());
+        for (String value : values) {
             InsertValue insertValue = new InsertValue();
-            if(value.trim().equals("?")){
+            if (value.trim().equals("?")) {
                 insertValue.setType(ValueType.JDBC);
-            }else if(SQLUtils.isSQLKeyword(value.trim()) || value.trim().startsWith("(")){
+            } else if (SQLUtils.isSQLKeyword(value.trim()) || value.trim().startsWith("(")) {
                 insertValue.setType(ValueType.SELECT);
-            }else {
+            } else {
                 insertValue.setType(ValueType.STATIC);
             }
             insertValue.setValue(value);
@@ -124,20 +124,20 @@ public class InsertSQLParser implements SQLParser{
 
     @Setter
     @Getter
-    public static class InsertValue{
+    public static class InsertValue {
         private ValueType type;
         private String value;
 
-        public boolean isSelect(){
+        public boolean isSelect() {
             return ValueType.SELECT == this.type;
         }
 
-        public boolean isJdbc(){
+        public boolean isJdbc() {
             return ValueType.JDBC == this.type;
         }
     }
 
-    public static enum ValueType{
+    public static enum ValueType {
         STATIC,
         JDBC,
         SELECT

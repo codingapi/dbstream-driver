@@ -72,14 +72,16 @@ spring.datasource.password=12345678
 实现并注册 `DBEventPusher` 接口，接收结构化的数据库变更事件：
 
 ```java
-import com.codingapi.dbstream.DBStreamContext;
-import com.codingapi.dbstream.stream.DBEvent;
-import com.codingapi.dbstream.stream.DBEventPusher;
+
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.DBEventPusher;
 
 // 在应用启动时注册事件推送器（如 @PostConstruct、@Configuration 等）
-DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+DBStreamContext.getInstance().
+
+addEventPusher(new DBEventPusher() {
     @Override
-    public void push(List<DBEvent> events) {
+    public void push (List < DBEvent > events) {
         // 处理数据库变更事件
         for (DBEvent event : events) {
             System.out.println("表名: " + event.getTableName());
@@ -88,7 +90,7 @@ DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
             System.out.println("主键: " + event.getPrimaryKeys());
             System.out.println("事务标识: " + event.getTransactionKey());
             System.out.println("时间戳: " + event.getTimestamp());
-            
+
             // 可以对接消息队列（如 Kafka、RocketMQ 等）
             // kafkaProducer.send(event);
         }
@@ -139,17 +141,21 @@ import com.codingapi.dbstream.scanner.DbTable;
 
 import java.util.Properties;
 
-public class DefaultDBTableSupportProvider implements DBTableSupportProvider {
+/**
+ * 默认DB事件判断类 
+ * 规则为满足条件的全部支持
+ */
+public class DefaultDBEventSupporter implements DBEventSupporter {
 
     @Override
     public boolean support(Properties info, DbTable dbTable) {
-       // 所有表都会监听
-       return true;
+        return true;
     }
 }
 
+
 // 添加 SQL 表执行判断
-DBStreamContext.getInstance().setDbTableSupportProvider(new DefaultDBTableSupportProvider());
+DBStreamContext.getInstance().setDbEventSupporter(new DefaultDBEventSupporter());
 ```
 
 根据表名等信息来决定是否进行数据事件解析。仅当返回true的才会进行事件推送。DefaultDBTableSupportProvider为默认的实现机制。
@@ -207,7 +213,7 @@ DBStreamContext.getInstance().addListener(SQLExecuteListener listener);
 
 ```java
 // 添加 SQL 表执行判断
-DBStreamContext.getInstance().setDbTableSupportProvider(DBTableSupportProvider dbTableSupportProvider);
+DBStreamContext.getInstance().setDbEventSupporter(DBEventSupporter dbEventSupporter);
 ```
 
 #### 元数据管理

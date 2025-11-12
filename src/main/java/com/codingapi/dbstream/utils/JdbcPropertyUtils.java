@@ -4,9 +4,15 @@ import com.codingapi.dbstream.scanner.DBMetaData;
 
 import java.util.Properties;
 
-public class JDBCPropertyUtils {
+/**
+ * Jdbc属性工具类
+ */
+public class JdbcPropertyUtils {
 
-    public static String getJdbcKey(Properties properties, String schema) {
+    /**
+     * 获取或创建数据库唯一标识信息
+     */
+    public static String getOrGenerateJdbcKey(Properties properties, String schema) {
         String jdbcKey = properties.getProperty(DBMetaData.KEY_JDBC_KEY);
         if (jdbcKey != null) {
             return jdbcKey;
