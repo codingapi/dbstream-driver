@@ -201,22 +201,6 @@ public class SQLExecuteState {
         return new ArrayList<>();
     }
 
-    /**
-     * 获取执行的SQL队列
-     * @return List
-     */
-    public List<SQLExecuteParam> getBatchExecuteSQLParamList(){
-        if(this.batchMode){
-            if(this.sqlExecuteParams.isEmpty()){
-                return new ArrayList<>();
-            }
-            int size = this.sqlExecuteParams.size();
-            return this.sqlExecuteParams.subList(0,size-1);
-
-        }
-        return new ArrayList<>();
-    }
-
 
     /**
      * 获取Batch的SQLExecuteState

@@ -1,10 +1,8 @@
 package com.codingapi.dbstream.parser;
 
-import com.codingapi.dbstream.interceptor.SQLExecuteParam;
 import com.codingapi.dbstream.interceptor.SQLExecuteState;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
-import com.codingapi.dbstream.sqlparser.DeleteSQLParser;
 import com.codingapi.dbstream.stream.DBEvent;
 import com.codingapi.dbstream.stream.EventType;
 import com.codingapi.dbstream.utils.ResultSetUtils;
@@ -15,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteDBEventParser   {
+public class DeleteDBEventParser  implements DBEventParser {
 
     private final List<Map<String, Object>> prepareList = new ArrayList<>();
 
@@ -32,9 +30,6 @@ public class DeleteDBEventParser   {
     }
 
     public void prepare() throws SQLException {
-        System.out.println("delete batch-mode:"+this.executeState.isBatchMode());
-        List<SQLExecuteParam> executeParamList = this.executeState.getBatchExecuteSQLParamList();
-        System.out.println(executeParamList.size());
         this.updateRows();
     }
 
