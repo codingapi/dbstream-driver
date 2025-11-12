@@ -15,13 +15,13 @@ import java.util.Calendar;
 
 public class PreparedStatementProxy implements PreparedStatement {
 
+    private final ConnectionProxy connection;
     private final PreparedStatement preparedStatement;
-    private final DBMetaData metaData;
     private final SQLExecuteState executeState;
 
     public PreparedStatementProxy(ConnectionProxy connection, PreparedStatement preparedStatement, DBMetaData metaData, String sql) throws SQLException {
+        this.connection = connection;
         this.preparedStatement = preparedStatement;
-        this.metaData = metaData;
         this.executeState = new SQLExecuteState(sql, connection, this, metaData);
         this.cachedKeys = null;
     }
@@ -530,7 +530,7 @@ public class PreparedStatementProxy implements PreparedStatement {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return new ConnectionProxy(preparedStatement.getConnection(), this.metaData);
+        return connection;
     }
 
     @Override

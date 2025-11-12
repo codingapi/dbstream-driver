@@ -26,6 +26,11 @@ public class ConnectionProxy implements Connection {
         this.metaData = metaData;
         // 初始化赋值
         this.generateTransactionKey();
+        try {
+            TransactionEventPools.getInstance().setAutoCommit(connection.getAutoCommit());
+        } catch (SQLException ignored) {
+            TransactionEventPools.getInstance().setAutoCommit(true);
+        }
     }
 
     private void generateTransactionKey() {
@@ -84,7 +89,7 @@ public class ConnectionProxy implements Connection {
     @Override
     public void close() throws SQLException {
         connection.close();
-        TransactionEventPools.getInstance().clear();
+        TransactionEventPools.getInstance().reset();
         // 事务关闭以后，更换事务的标识信息
         this.generateTransactionKey();
     }

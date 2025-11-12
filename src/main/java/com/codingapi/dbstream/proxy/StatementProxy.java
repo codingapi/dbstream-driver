@@ -165,7 +165,7 @@ public class StatementProxy implements Statement {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return new ConnectionProxy(statement.getConnection(), this.metaData);
+        return connection;
     }
 
     @Override

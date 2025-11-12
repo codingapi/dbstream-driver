@@ -16,7 +16,7 @@ public class TransactionEventPools {
 
     private final ThreadLocal<List<DBEvent>> pools = new ThreadLocal<>();
 
-    private final ThreadLocal<Boolean> autoMode = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> autoMode = ThreadLocal.withInitial(() -> Boolean.TRUE);
 
     private TransactionEventPools() {
     }
@@ -33,7 +33,8 @@ public class TransactionEventPools {
      * 是否自动提交
      */
     public boolean isAutoCommit() {
-        return autoMode.get() != null && autoMode.get();
+        Boolean mode = autoMode.get();
+        return mode != null && mode;
     }
 
 
@@ -83,6 +84,10 @@ public class TransactionEventPools {
     }
 
     public void clear() {
+        pools.remove();
+    }
+
+    public void reset() {
         pools.remove();
         autoMode.remove();
     }

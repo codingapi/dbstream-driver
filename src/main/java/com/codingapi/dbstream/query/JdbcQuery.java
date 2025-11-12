@@ -42,23 +42,24 @@ public class JdbcQuery {
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql, List<Object> params) throws SQLException {
-        PreparedStatement preparedStatement = connection.getConnection().prepareStatement(sql);
-        for (int i = 0; i < params.size(); i++) {
-            Object param = params.get(i);
-            preparedStatement.setObject(i + 1, param);
-        }
-        ResultSet resultSet = preparedStatement.executeQuery();
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        List<Map<String, Object>> list = new ArrayList<>();
-        while (resultSet.next()) {
-            Map<String, Object> map = new HashMap<>();
-            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                map.put(resultSetMetaData.getColumnName(i), resultSet.getObject(i));
+        List<Object> safeParams = params == null ? new ArrayList<>() : params;
+        try (PreparedStatement preparedStatement = connection.getConnection().prepareStatement(sql)) {
+            for (int i = 0; i < safeParams.size(); i++) {
+                preparedStatement.setObject(i + 1, safeParams.get(i));
             }
-            list.add(map);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                List<Map<String, Object>> list = new ArrayList<>();
+                while (resultSet.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                        map.put(resultSetMetaData.getColumnName(i), resultSet.getObject(i));
+                    }
+                    list.add(map);
+                }
+                return list;
+            }
         }
-        resultSet.close();
-        return list;
     }
 
 
