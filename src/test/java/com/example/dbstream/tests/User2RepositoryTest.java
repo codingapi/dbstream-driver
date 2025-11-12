@@ -5,7 +5,7 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.example.dbstream.entity.User2;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User2Repository;
-import jakarta.transaction.Transactional;
+import javax.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

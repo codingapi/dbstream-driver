@@ -2,7 +2,7 @@ package com.example.dbstream.entity;
 
 import lombok.Data;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Data
 @Entity
