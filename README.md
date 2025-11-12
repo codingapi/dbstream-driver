@@ -280,7 +280,7 @@ mvn clean test -P travis
 
 4. **元数据缓存**：
    - 数据库元数据会在首次连接时自动扫描并缓存
-   - 如果数据库表结构发生变化，可以调用 `clear()`或`metaData.addUpdateTableMateList(String tableName);` 方法清理缓存，下次访问时会自动重新加载
+   - 如果数据库表结构发生变化，可以调用 `clear()`或`metaData.addUpdateSubscribe(String tableName);` 方法清理缓存，下次访问时会自动重新加载
 
 ## 📄 许可证
 
