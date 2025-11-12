@@ -17,21 +17,25 @@ import java.util.*;
 public class SQLExecuteState {
 
     /**
-     * SQL参数,integer index模式
+     * 执行SQL队列
      */
-    @Getter
-    private final Map<Integer,Object> indexParams;
-    /**
-     * SQL参数,string key 模型
-     */
-    @Getter
-    private final Map<String, Object> mapParams;
+    private final List<SQLExecuteParam> sqlExecuteParams;
 
     /**
-     * 执行的sql
+     * 当前执行对象
+     */
+    private SQLExecuteParam currentExecute;
+
+    /**
+     * 模式判断
      */
     @Getter
-    @Setter
+    private boolean batchMode = false;
+
+    /**
+     * 当前绑定sql
+     */
+    @Getter
     private String sql;
 
     /**
@@ -78,9 +82,56 @@ public class SQLExecuteState {
         this.connectionProxy = connectionProxy;
         this.statement = statement;
         this.metaData = metaData;
+        this.sqlExecuteParams = new ArrayList<>();
 
-        this.indexParams = new HashMap<>();
-        this.mapParams = new HashMap<>();
+        this.currentExecute = new SQLExecuteParam();
+        this.currentExecute.setSql(sql);
+        this.sqlExecuteParams.add(currentExecute);
+    }
+
+    public void setSql(String sql){
+        this.sql = sql;
+        if(this.currentExecute!=null) {
+            this.currentExecute.setSql(sql);
+        }
+    }
+
+    /**
+     * 添加任务队列
+     *
+     * @param sql 执行sql
+     */
+    public void addBatch(String sql) {
+        batchMode = true;
+        SQLExecuteParam executeParam = new SQLExecuteParam();
+        executeParam.setSql(sql);
+        this.sqlExecuteParams.add(executeParam);
+        this.currentExecute = executeParam;
+    }
+
+    /**
+     * 添加任务队列
+     *
+     */
+    public void addBatch() {
+        this.addBatch(this.sql);
+    }
+
+    /**
+     * 清空队列
+     */
+    public void clearBatch() {
+        this.sqlExecuteParams.clear();
+        this.currentExecute = null;
+    }
+
+    /**
+     * 清理参数设置
+     */
+    public void cleanParams(){
+        if(this.currentExecute!=null) {
+            this.currentExecute.cleanParams();
+        }
     }
 
     /**
@@ -114,7 +165,9 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(String key, Object value) {
-        mapParams.put(key, value);
+        if(this.currentExecute!=null) {
+            currentExecute.setParam(key, value);
+        }
     }
 
     /**
@@ -124,24 +177,68 @@ public class SQLExecuteState {
      * @param value 参数值
      */
     public void setParam(int index, Object value) {
-        indexParams.put(index, value);
+        if(this.currentExecute!=null) {
+            currentExecute.setParam(index, value);
+        }
     }
 
     /**
      * 获取参数列表
+     *
      * @return List
      */
-    public List<Object> getListParams(){
-        List<Object> list = new ArrayList<>();
-        if (indexParams.isEmpty()) {
+    public List<Object> getListParams() {
+        if(batchMode){
+            if(this.sqlExecuteParams.isEmpty()){
+                return new ArrayList<>();
+            }
+            int size = this.sqlExecuteParams.size();
+            return this.sqlExecuteParams.get(size-2).getListParams();
+        }
+        if(this.currentExecute!=null) {
+            return currentExecute.getListParams();
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 获取执行的SQL队列
+     * @return List
+     */
+    public List<SQLExecuteParam> getBatchExecuteSQLParamList(){
+        if(this.batchMode){
+            if(this.sqlExecuteParams.isEmpty()){
+                return new ArrayList<>();
+            }
+            int size = this.sqlExecuteParams.size();
+            return this.sqlExecuteParams.subList(0,size-1);
+
+        }
+        return new ArrayList<>();
+    }
+
+
+    /**
+     * 获取Batch的SQLExecuteState
+     * @return List
+     */
+    public List<SQLExecuteState> getBatchSQLExecuteStateList(){
+        if(this.batchMode){
+            if(this.sqlExecuteParams.isEmpty()){
+                return new ArrayList<>();
+            }
+            int size = this.sqlExecuteParams.size();
+            List<SQLExecuteState> list = new ArrayList<>();
+            List<SQLExecuteParam> paramList = this.sqlExecuteParams.subList(0,size-1);
+            for(SQLExecuteParam executeParam:paramList){
+                SQLExecuteState executeState = new SQLExecuteState(executeParam.getSql(), connectionProxy,statement,metaData);
+                executeState.currentExecute = executeParam;
+                list.add(executeState);
+            }
             return list;
+
         }
-        List<Integer> keys = new ArrayList<>(indexParams.keySet());
-        Collections.sort(keys);
-        for(Integer key: keys){
-            list.add(indexParams.get(key));
-        }
-        return list;
+        return new ArrayList<>();
     }
 
 
@@ -167,13 +264,15 @@ public class SQLExecuteState {
 
     /**
      * 查询
+     *
      * @param sql sql
      * @return 查询结果
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql) throws SQLException {
-        return this.query(sql,new ArrayList<>());
+        return this.query(sql, new ArrayList<>());
     }
+
     /**
      * 查询
      *
@@ -219,7 +318,7 @@ public class SQLExecuteState {
                     for (int i = 1; i <= columnCount; i++) {
                         String columName = resultSetMetaData.getColumnName(i);
                         DbColumn dbColumn = dbTable.getColumnByName(columName);
-                        if(dbColumn!=null) {
+                        if (dbColumn != null) {
                             map.put(dbColumn.getName(), rs.getObject(i));
                         }
                     }
@@ -234,6 +333,7 @@ public class SQLExecuteState {
 
     /**
      * 获取驱动配置信息
+     *
      * @return Properties
      */
     public Properties getDriverProperties() {
@@ -246,6 +346,7 @@ public class SQLExecuteState {
 
     /**
      * 获取数据库的jdbcUrl
+     *
      * @return jdbcUrl
      */
     public String getJdbcUrl() {
@@ -258,10 +359,11 @@ public class SQLExecuteState {
 
     /**
      * 获取数据库的jdbcKey
+     *
      * @return jdbcKey
      */
-    public String getJdbcKey(){
-        if(metaData==null){
+    public String getJdbcKey() {
+        if (metaData == null) {
             return null;
         }
         return metaData.getKeyJdbcKey();
@@ -270,6 +372,7 @@ public class SQLExecuteState {
 
     /**
      * 更新数据库的元数据信息
+     *
      * @param tableName 表名
      */
     public void updateMetaData(String tableName) throws SQLException {

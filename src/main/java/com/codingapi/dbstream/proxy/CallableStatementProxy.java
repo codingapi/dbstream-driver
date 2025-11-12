@@ -799,6 +799,7 @@ public class CallableStatementProxy implements CallableStatement {
     @Override
     public void clearParameters() throws SQLException {
         callableStatement.clearParameters();
+        this.executeState.cleanParams();
     }
 
     @Override
@@ -824,6 +825,7 @@ public class CallableStatementProxy implements CallableStatement {
     @Override
     public void addBatch() throws SQLException {
         callableStatement.addBatch();
+        this.executeState.addBatch();
     }
 
     @Override
@@ -1153,11 +1155,13 @@ public class CallableStatementProxy implements CallableStatement {
     @Override
     public void addBatch(String sql) throws SQLException {
         callableStatement.addBatch(sql);
+        this.executeState.addBatch(sql);
     }
 
     @Override
     public void clearBatch() throws SQLException {
         callableStatement.clearBatch();
+        this.executeState.clearBatch();
     }
 
     @Override

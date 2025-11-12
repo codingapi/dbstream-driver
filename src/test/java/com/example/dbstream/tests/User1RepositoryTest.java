@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
@@ -172,8 +174,14 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(value = false)
     void test8() {
-        entityManager.createQuery("DELETE FROM User1").executeUpdate();
-        for (int i=0;i<10;i++){
+        List<User1> list = userRepository.findAll();
+        for (User1 user:list){
+            user.setEmail("111");
+        }
+        userRepository.saveAll(list);
+
+        userRepository.deleteAll();
+        for (int i=0;i<5;i++){
             User1 user1 = new User1();
             user1.setUsername("admin1");
             user1.setPassword("admin1");
