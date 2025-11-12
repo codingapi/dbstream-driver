@@ -124,10 +124,11 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
 
                 for (int i = 0; i < batchSize; i++) {
                     DBEventParser dataParser = ThreadLocalContext.getInstance().get(i);
+                    SQLExecuteState sqlExecuteState = executeStateList.get(i);
                     if (dataParser != null) {
                         // 获取DB事件信息
                         List<DBEvent> eventList = dataParser.loadEvents(arrays.get(i));
-                        TransactionEventPools.getInstance().addEvents(transactionKey, eventList);
+                        TransactionEventPools.getInstance().addEvents(sqlExecuteState.getJdbcQuery(),transactionKey, eventList);
                     }
                 }
                 // 清空本地缓存数据
@@ -138,7 +139,7 @@ public abstract class DBEventExecuteListener implements SQLExecuteListener {
                 if (dataParser != null) {
                     // 获取DB事件信息
                     List<DBEvent> eventList = dataParser.loadEvents(result);
-                    TransactionEventPools.getInstance().addEvents(transactionKey, eventList);
+                    TransactionEventPools.getInstance().addEvents(executeState.getJdbcQuery(),transactionKey, eventList);
                 }
                 // 清空本地缓存数据
                 ThreadLocalContext.getInstance().remove();

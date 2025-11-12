@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.event;
 
+import com.codingapi.dbstream.query.JdbcQuery;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class TransactionEventPools {
     /**
      * 添加事务事件
      */
-    public void addEvents(String transactionKey, List<DBEvent> events) {
+    public void addEvents(JdbcQuery jdbcQuery,String transactionKey, List<DBEvent> events) {
         List<DBEvent> currentEvents = pools.get();
         if (currentEvents == null) {
             currentEvents = new ArrayList<>();
@@ -48,7 +49,7 @@ public class TransactionEventPools {
         currentEvents.addAll(events);
 
         if (this.isAutoCommit()) {
-            this.commitEvents(transactionKey);
+            this.commitEvents(jdbcQuery,transactionKey);
         }
 
     }
@@ -56,15 +57,16 @@ public class TransactionEventPools {
     /**
      * 提交消息
      *
+     * @param jdbcQuery 数据查询对象
      * @param transactionKey 事务标示
      */
-    public void commitEvents(String transactionKey) {
+    public void commitEvents(JdbcQuery jdbcQuery, String transactionKey) {
         List<DBEvent> currentEvents = pools.get();
         if (currentEvents != null && !currentEvents.isEmpty()) {
             currentEvents.forEach(dbEvent -> {
                 dbEvent.setTransactionKey(transactionKey);
             });
-            DBEventContext.getInstance().push(currentEvents);
+            DBEventContext.getInstance().push(jdbcQuery,currentEvents);
             currentEvents.clear();
         }
         this.clear();
@@ -73,9 +75,10 @@ public class TransactionEventPools {
     /**
      * 回滚消息
      *
+     * @param jdbcQuery 数据查询对象
      * @param transactionKey 事务标示
      */
-    public void rollbackEvents(String transactionKey) {
+    public void rollbackEvents(JdbcQuery jdbcQuery,String transactionKey) {
         this.clear();
     }
 

@@ -5,16 +5,13 @@ import com.codingapi.dbstream.DBStreamContext;
 import com.example.dbstream.entity.User1;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User1Repository;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,17 +25,6 @@ class User1RepositoryTest {
 
     @Autowired
     private EntityManager entityManager;
-
-
-    @BeforeEach
-    void setUp() {
-//        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
-//            @Override
-//            public void push(List<DBEvent> events) {
-//                System.out.println(events);
-//            }
-//        });
-    }
 
     /**
      * 常用操作测试
@@ -170,7 +156,7 @@ class User1RepositoryTest {
     }
 
     /**
-     * 异常回滚测试
+     * 批量数据插入测试
      */
     @Test
     @Transactional
@@ -195,5 +181,9 @@ class User1RepositoryTest {
         entityManager.clear();
 
     }
+
+
+
+
 
 }

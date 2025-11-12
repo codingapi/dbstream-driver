@@ -1,6 +1,7 @@
 package com.codingapi.dbstream.interceptor;
 
 import com.codingapi.dbstream.proxy.ConnectionProxy;
+import com.codingapi.dbstream.query.JdbcQuery;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.scanner.DBScanner;
 import com.codingapi.dbstream.scanner.DbColumn;
@@ -8,7 +9,10 @@ import com.codingapi.dbstream.scanner.DbTable;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 /**
@@ -76,11 +80,18 @@ public class SQLExecuteState {
     @Getter
     private long afterTimestamp;
 
+    /**
+     * JDBC数据查询
+     */
+    @Getter
+    private final JdbcQuery jdbcQuery;
+
 
     public SQLExecuteState(String sql, ConnectionProxy connectionProxy, Statement statement, DBMetaData metaData) {
         this.sql = sql;
         this.connectionProxy = connectionProxy;
         this.statement = statement;
+        this.jdbcQuery = new JdbcQuery(connectionProxy);
         this.metaData = metaData;
         this.sqlExecuteParams = new ArrayList<>();
 
@@ -255,7 +266,7 @@ public class SQLExecuteState {
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql) throws SQLException {
-        return this.query(sql, new ArrayList<>());
+        return this.jdbcQuery.query(sql);
     }
 
     /**
@@ -267,23 +278,7 @@ public class SQLExecuteState {
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql, List<Object> params) throws SQLException {
-        PreparedStatement preparedStatement = connectionProxy.getConnection().prepareStatement(sql);
-        for (int i = 0; i < params.size(); i++) {
-            Object param = params.get(i);
-            preparedStatement.setObject(i + 1, param);
-        }
-        ResultSet resultSet = preparedStatement.executeQuery();
-        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-        List<Map<String, Object>> list = new ArrayList<>();
-        while (resultSet.next()) {
-            Map<String, Object> map = new HashMap<>();
-            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                map.put(resultSetMetaData.getColumnName(i), resultSet.getObject(i));
-            }
-            list.add(map);
-        }
-        resultSet.close();
-        return list;
+        return jdbcQuery.query(sql,params);
     }
 
     /**
@@ -314,6 +309,7 @@ public class SQLExecuteState {
         }
         return list;
     }
+
 
 
     /**

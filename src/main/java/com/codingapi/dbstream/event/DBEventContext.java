@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.event;
 
+import com.codingapi.dbstream.query.JdbcQuery;
 import lombok.Getter;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class DBEventContext {
 
     }
 
-    void push(List<DBEvent> events) {
+    void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
         if (events == null || events.isEmpty()) {
             return;
         }
@@ -30,10 +31,10 @@ public class DBEventContext {
         });
         if (!this.pushers.isEmpty()) {
             for (DBEventPusher pusher : pushers) {
-                pusher.push(events);
+                pusher.push(jdbcQuery,events);
             }
         } else {
-            defaultDBEventPusher.push(events);
+            defaultDBEventPusher.push(jdbcQuery,events);
         }
     }
 

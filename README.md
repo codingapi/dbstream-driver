@@ -75,13 +75,12 @@ spring.datasource.password=12345678
 
 import com.codingapi.dbstream.event.DBEvent;
 import com.codingapi.dbstream.event.DBEventPusher;
+import com.codingapi.dbstream.query.JdbcQuery;
 
 // 在应用启动时注册事件推送器（如 @PostConstruct、@Configuration 等）
-DBStreamContext.getInstance().
-
-addEventPusher(new DBEventPusher() {
+DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
     @Override
-    public void push (List < DBEvent > events) {
+    public void push(JdbcQuery jdbcQuery,List<DBEvent> events){
         // 处理数据库变更事件
         for (DBEvent event : events) {
             System.out.println("表名: " + event.getTableName());
@@ -135,7 +134,7 @@ DBStreamContext.getInstance().addListener(new MySQLListener());
 
 ### 5. 通过设置DBTableSupportProvider订阅对那些表进行监听（可选）
 
-```
+```java
  
 import com.codingapi.dbstream.scanner.DbTable;
 
@@ -273,6 +272,8 @@ mvn clean test -P travis
 
 3. **使用场景限制**：
    - 数据库表必须有主键的定义，在DELETE事件需要明确主键信息，主键物理表不存在时可通过外部key文件配置的方式添加。
+   - 注意：INSERT语句在INSERT INTO SELECT非手动指定ID字段，或者INSERT中传入函数等形式可能导致无法获取到数据ID的情况。
+   - INSERT语句中VALUES不支持函数模式传递数据，建议通过指定参数的方式进行插入数据，若使用了函数无法获取到真实数据时，可自行通过ID进行二次查询获取落库数据,使用`jdbcQuery`对象。
    - 若INSERT INTO SELECT 语句中，采用主键自增模式，受限于JDBC的支持将无法解析到自增ID，建议修改单条保存或修改ID为手动传递。
 
 4. **元数据缓存**：

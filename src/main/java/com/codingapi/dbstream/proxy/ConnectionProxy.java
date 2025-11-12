@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.proxy;
 
+import com.codingapi.dbstream.query.JdbcQuery;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.event.TransactionEventPools;
 import lombok.Getter;
@@ -64,16 +65,18 @@ public class ConnectionProxy implements Connection {
 
     @Override
     public void commit() throws SQLException {
+        JdbcQuery jdbcQuery = new JdbcQuery(this);
+        TransactionEventPools.getInstance().commitEvents(jdbcQuery,transactionKey);
         connection.commit();
-        TransactionEventPools.getInstance().commitEvents(transactionKey);
         // 事务提交以后，更换事务的标识信息
         this.generateTransactionKey();
     }
 
     @Override
     public void rollback() throws SQLException {
+        JdbcQuery jdbcQuery = new JdbcQuery(this);
+        TransactionEventPools.getInstance().rollbackEvents(jdbcQuery,transactionKey);
         connection.rollback();
-        TransactionEventPools.getInstance().rollbackEvents(transactionKey);
         // 事务提交以后，更换事务的标识信息
         this.generateTransactionKey();
     }

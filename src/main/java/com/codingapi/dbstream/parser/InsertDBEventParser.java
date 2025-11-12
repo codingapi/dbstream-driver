@@ -128,7 +128,7 @@ public class InsertDBEventParser implements DBEventParser {
                     }
                 }
             } else if (insertValue.isJdbc()) {
-                value = paramList.get(i);
+                value = paramList.get(insertValue.getJdbcParamIndex()-1);
             } else {
                 value = insertValue.getValue();
             }
