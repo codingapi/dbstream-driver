@@ -81,7 +81,7 @@ public class SQLUtils {
     }
 
     /**
-     *  提取insert语句中values的内容
+     * 提取insert语句中values的内容
      */
     public static List<String> parseInsertSQLValues(String sqlValues) {
         List<String> result = new ArrayList<>();

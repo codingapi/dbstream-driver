@@ -40,7 +40,7 @@ public class TransactionEventPools {
     /**
      * 添加事务事件
      */
-    public void addEvents(JdbcQuery jdbcQuery,String transactionKey, List<DBEvent> events) {
+    public void addEvents(JdbcQuery jdbcQuery, String transactionKey, List<DBEvent> events) {
         List<DBEvent> currentEvents = pools.get();
         if (currentEvents == null) {
             currentEvents = new ArrayList<>();
@@ -49,7 +49,7 @@ public class TransactionEventPools {
         currentEvents.addAll(events);
 
         if (this.isAutoCommit()) {
-            this.commitEvents(jdbcQuery,transactionKey);
+            this.commitEvents(jdbcQuery, transactionKey);
         }
 
     }
@@ -57,7 +57,7 @@ public class TransactionEventPools {
     /**
      * 提交消息
      *
-     * @param jdbcQuery 数据查询对象
+     * @param jdbcQuery      数据查询对象
      * @param transactionKey 事务标示
      */
     public void commitEvents(JdbcQuery jdbcQuery, String transactionKey) {
@@ -66,7 +66,7 @@ public class TransactionEventPools {
             currentEvents.forEach(dbEvent -> {
                 dbEvent.setTransactionKey(transactionKey);
             });
-            DBEventContext.getInstance().push(jdbcQuery,currentEvents);
+            DBEventContext.getInstance().push(jdbcQuery, currentEvents);
             currentEvents.clear();
         }
         this.clear();
@@ -75,10 +75,10 @@ public class TransactionEventPools {
     /**
      * 回滚消息
      *
-     * @param jdbcQuery 数据查询对象
+     * @param jdbcQuery      数据查询对象
      * @param transactionKey 事务标示
      */
-    public void rollbackEvents(JdbcQuery jdbcQuery,String transactionKey) {
+    public void rollbackEvents(JdbcQuery jdbcQuery, String transactionKey) {
         this.clear();
     }
 

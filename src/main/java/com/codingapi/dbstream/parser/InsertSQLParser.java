@@ -108,12 +108,12 @@ public class InsertSQLParser implements SQLParser {
         List<InsertValue> insertValues = new ArrayList<>();
         List<String> values = SQLUtils.parseInsertSQLValues(this.getValuesSQL());
         int jdbcIndex = 0;
-        for (String value:values) {
+        for (String value : values) {
             InsertValue insertValue = new InsertValue();
             if (value.trim().equals("?")) {
                 insertValue.setType(ValueType.JDBC);
                 jdbcIndex++;
-                insertValue.setValue(value+jdbcIndex);
+                insertValue.setValue(value + jdbcIndex);
             } else if (SQLUtils.isSQLKeyword(value.trim()) || value.trim().startsWith("(")) {
                 insertValue.setType(ValueType.SELECT);
                 insertValue.setValue(value);
@@ -140,8 +140,8 @@ public class InsertSQLParser implements SQLParser {
             return ValueType.JDBC == this.type;
         }
 
-        public int getJdbcParamIndex(){
-            return Integer.parseInt(this.value.replace("?",""));
+        public int getJdbcParamIndex() {
+            return Integer.parseInt(this.value.replace("?", ""));
         }
     }
 

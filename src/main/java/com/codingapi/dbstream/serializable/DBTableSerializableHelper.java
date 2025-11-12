@@ -26,6 +26,7 @@ public class DBTableSerializableHelper {
 
     /**
      * 构造函数
+     *
      * @param jdbcKey 数据库的唯一标识
      */
     public DBTableSerializableHelper(String jdbcKey) {

@@ -31,10 +31,10 @@ public class DBEventContext {
         });
         if (!this.pushers.isEmpty()) {
             for (DBEventPusher pusher : pushers) {
-                pusher.push(jdbcQuery,events);
+                pusher.push(jdbcQuery, events);
             }
         } else {
-            defaultDBEventPusher.push(jdbcQuery,events);
+            defaultDBEventPusher.push(jdbcQuery, events);
         }
     }
 

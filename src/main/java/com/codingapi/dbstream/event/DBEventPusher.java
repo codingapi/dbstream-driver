@@ -11,9 +11,10 @@ public interface DBEventPusher {
 
     /**
      * 推送事件
+     *
      * @param jdbcQuery JDBC数据查询对象
-     * @param events DB事件消息
+     * @param events    DB事件消息
      */
-    void push(JdbcQuery jdbcQuery,List<DBEvent> events);
+    void push(JdbcQuery jdbcQuery, List<DBEvent> events);
 
 }

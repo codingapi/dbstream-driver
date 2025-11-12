@@ -66,7 +66,7 @@ public class ConnectionProxy implements Connection {
     @Override
     public void commit() throws SQLException {
         JdbcQuery jdbcQuery = new JdbcQuery(this);
-        TransactionEventPools.getInstance().commitEvents(jdbcQuery,transactionKey);
+        TransactionEventPools.getInstance().commitEvents(jdbcQuery, transactionKey);
         connection.commit();
         // 事务提交以后，更换事务的标识信息
         this.generateTransactionKey();
@@ -75,7 +75,7 @@ public class ConnectionProxy implements Connection {
     @Override
     public void rollback() throws SQLException {
         JdbcQuery jdbcQuery = new JdbcQuery(this);
-        TransactionEventPools.getInstance().rollbackEvents(jdbcQuery,transactionKey);
+        TransactionEventPools.getInstance().rollbackEvents(jdbcQuery, transactionKey);
         connection.rollback();
         // 事务提交以后，更换事务的标识信息
         this.generateTransactionKey();

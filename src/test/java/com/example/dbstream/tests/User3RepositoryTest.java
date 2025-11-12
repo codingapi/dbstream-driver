@@ -17,8 +17,8 @@ class User3RepositoryTest {
     private User3Repository userRepository;
 
     /**
-     *  执行内置函数插入测试
-     *  ！！直接将函数当作字符串传递了，实际开发过程中慎用该模式
+     * 执行内置函数插入测试
+     * ！！直接将函数当作字符串传递了，实际开发过程中慎用该模式
      */
     @Test
     @Transactional

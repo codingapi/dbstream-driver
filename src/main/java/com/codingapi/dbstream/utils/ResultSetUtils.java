@@ -1,7 +1,7 @@
 package com.codingapi.dbstream.utils;
 
 /**
- *  执行结果判断
+ * 执行结果判断
  */
 public class ResultSetUtils {
 

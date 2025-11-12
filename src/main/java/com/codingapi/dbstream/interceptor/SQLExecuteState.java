@@ -278,7 +278,7 @@ public class SQLExecuteState {
      * @throws SQLException 查询异常
      */
     public List<Map<String, Object>> query(String sql, List<Object> params) throws SQLException {
-        return jdbcQuery.query(sql,params);
+        return jdbcQuery.query(sql, params);
     }
 
     /**
@@ -309,7 +309,6 @@ public class SQLExecuteState {
         }
         return list;
     }
-
 
 
     /**
