@@ -96,9 +96,11 @@ public class DeleteDBEventParser   {
         if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
+        String jdbcUrl = this.executeState.getJdbcUrl();
+        String jdbcKey = this.executeState.getJdbcKey();
+
         for (Map<String, Object> params : this.prepareList) {
-            String jdbcUrl = this.executeState.getJdbcUrl();
-            DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.DELETE);
+            DBEvent event = new DBEvent(jdbcUrl,jdbcKey, this.dbTable.getName(), EventType.DELETE);
             for (String key : params.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {

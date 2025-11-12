@@ -255,6 +255,18 @@ public class SQLExecuteState {
 
 
     /**
+     * 获取数据库的jdbcKey
+     * @return jdbcKey
+     */
+    public String getJdbcKey(){
+        if(metaData==null){
+            return null;
+        }
+        return metaData.getKeyJdbcKey();
+    }
+
+
+    /**
      * 更新数据库的元数据信息
      * @param tableName 表名
      */

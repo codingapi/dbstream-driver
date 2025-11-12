@@ -40,12 +40,13 @@ public class InsertDBEventParser {
 
     private List<DBEvent> loadDataEvents() {
         String jdbcUrl = this.executeState.getJdbcUrl();
+        String jdbcKey = this.executeState.getJdbcKey();
         List<DBEvent> eventList = new ArrayList<>();
         List<Map<String, Object>> generateValues = this.executeState.getStatementGenerateKeys(dbTable);
 
         // 插入拦截到的数据
         for (Map<String, Object> data : dataList) {
-            DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.INSERT);
+            DBEvent event = new DBEvent(jdbcUrl,jdbcKey, this.dbTable.getName(), EventType.INSERT);
             for (String key : data.keySet()) {
                 DbColumn dbColumn = dbTable.getColumnByName(key);
                 if (dbColumn != null) {

@@ -141,11 +141,12 @@ public class UpdateDBEventParser {
         if (ResultSetUtils.isNotUpdatedRows(result)) {
             return eventList;
         }
+        String jdbcUrl = this.executeState.getJdbcUrl();
+        String jdbcKey = this.executeState.getJdbcKey();
         // 根据id查询最新的数据
         List<Map<String,Object>> latestData = this.queryLatestData();
         for (Map<String, Object> params : latestData) {
-            String jdbcUrl = this.executeState.getJdbcUrl();
-            DBEvent event = new DBEvent(jdbcUrl, this.dbTable.getName(), EventType.UPDATE);
+            DBEvent event = new DBEvent(jdbcUrl,jdbcKey, this.dbTable.getName(), EventType.UPDATE);
             for(String column:params.keySet()){
                 DbColumn dbColumn = this.dbTable.getColumnByName(column);
                 if(dbColumn!=null){

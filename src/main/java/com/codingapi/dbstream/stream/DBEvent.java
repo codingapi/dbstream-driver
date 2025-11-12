@@ -30,9 +30,15 @@ public class DBEvent {
     private final List<String> primaryKeys;
 
     /**
-     * 数据库连接信息
+     * 数据源的连接信息
      */
     private final String jdbcUrl;
+
+    /**
+     * 数据源的唯一标识
+     * jdbcKey = sha256(jdbcUrl+schema)
+     */
+    private final String jdbcKey;
 
     /**
      * 产生数据实际
@@ -59,11 +65,13 @@ public class DBEvent {
                 ", data=" + data +
                 ", primaryKeys=" + primaryKeys +
                 ", transactionKey=" + transactionKey +
+                ", jdbcKey=" + jdbcKey +
                 ", timestamp=" + timestamp +
                 '}';
     }
 
-    public DBEvent(String jdbcUrl, String tableName, EventType type) {
+    public DBEvent(String jdbcUrl,String jdbcKey, String tableName, EventType type) {
+        this.jdbcKey = jdbcKey;
         this.jdbcUrl = jdbcUrl;
         this.data = new HashMap<>();
         this.primaryKeys = new ArrayList<>();
