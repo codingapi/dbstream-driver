@@ -26,7 +26,7 @@ public class DBStreamProxyDriver implements Driver {
 
     static {
         String version = VersionUtils.getDriverVersion();
-        System.out.println("<--- dbstream-driver version :" + version + "--->");
+        System.out.println("<--- dbstream-driver successfully loaded, version: "+version+" --->");
         try {
             DriverManager.registerDriver(new DBStreamProxyDriver());
         } catch (Exception e) {
