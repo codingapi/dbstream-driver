@@ -8,6 +8,7 @@ import com.codingapi.dbstream.query.JdbcQuery;
 import com.example.dbstream.entity.User1;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User1Repository;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +37,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(1)
     void test1() {
 
         DBStreamContext.getInstance().addListener(new MySQLListener());
@@ -81,6 +83,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(2)
     void test2() {
         DBStreamContext.getInstance().cleanEventPushers();
 
@@ -110,6 +113,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(3)
     void test3() {
         DBStreamContext.getInstance().cleanEventPushers();
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -130,6 +134,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(4)
     void test4() {
         DBStreamContext.getInstance().cleanEventPushers();
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -157,6 +162,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(5)
     void test5() {
         DBStreamContext.getInstance().cleanEventPushers();
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -184,6 +190,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(false)
+    @Order(6)
     void test6() {
         DBStreamContext.getInstance().cleanEventPushers();
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -217,8 +224,8 @@ class User1RepositoryTest {
      */
     @Test
     @Transactional
+    @Order(7)
     void test7() {
-
         DBStreamContext.getInstance().cleanEventPushers();
         AtomicBoolean running = new AtomicBoolean(false);
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -249,6 +256,7 @@ class User1RepositoryTest {
     @Test
     @Transactional
     @Rollback(value = false)
+    @Order(8)
     void test8() {
         DBStreamContext.getInstance().cleanEventPushers();
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
@@ -278,9 +286,6 @@ class User1RepositoryTest {
         }
         entityManager.flush();
         entityManager.clear();
-
-
     }
-
 
 }
