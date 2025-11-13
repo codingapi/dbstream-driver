@@ -16,6 +16,7 @@ import org.springframework.test.annotation.Rollback;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -286,6 +287,39 @@ class User1RepositoryTest {
         }
         entityManager.flush();
         entityManager.clear();
+    }
+
+    /**
+     * 批量数据插入测试
+     */
+    @Test
+    @Transactional
+    @Rollback(value = false)
+    @Order(9)
+    void test9() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=10);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+        List<User1> list = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            User1 user1 = new User1();
+            user1.setUsername("admin1");
+            user1.setPassword("admin1");
+            user1.setEmail("admin1@example.com");
+            user1.setNickname("admin1");
+            list.add(user1);
+        }
+        userRepository.saveAll(list);
+
+        userRepository.deleteAllData();
+
     }
 
 }

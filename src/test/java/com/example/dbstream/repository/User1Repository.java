@@ -32,5 +32,10 @@ public interface User1Repository extends JpaRepository<User1, Long> {
     @Query("insert into User1(email,username,password,nickname) select u.email,u.username,u.password,u.nickname from User1 u")
     void insertIntoFromSelect();
 
+
+    @Modifying
+    @Query("delete from User1")
+    int deleteAllData();
+
 }
 
