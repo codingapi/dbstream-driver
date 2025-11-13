@@ -41,7 +41,7 @@ public class DbTable implements Serializable {
     /**
      * 加载主键的字段
      */
-    void reloadPrimaryColumns() {
+    void reloadPrimaryKeyColumns() {
         if (this.primaryKeys.isEmpty()) {
             return;
         }
@@ -96,7 +96,11 @@ public class DbTable implements Serializable {
         this.primaryKeys.addAll(primaryKeys);
     }
 
-    public void loadLocalPrimaryKeys(List<String> primaryKeys) {
+    /**
+     * 校验并添加主键字段
+     * @param primaryKeys 主键字段list
+     */
+    void validateAndAddPrimaryKeys(List<String> primaryKeys) {
         if (primaryKeys != null && !primaryKeys.isEmpty()) {
             for (String primaryKey : primaryKeys) {
                 DbColumn column = this.getColumnByName(primaryKey);

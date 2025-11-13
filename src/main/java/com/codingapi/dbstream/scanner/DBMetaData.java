@@ -1,8 +1,10 @@
 package com.codingapi.dbstream.scanner;
 
+import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.serializable.DBTableSerializableHelper;
 import lombok.Getter;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -17,7 +19,7 @@ public class DBMetaData {
      * 待更新的table meta数据
      */
     @Getter
-    private final List<String> subjectTableNameList = new ArrayList<>();
+    private final List<String> subscribeTableNameList = new ArrayList<>();
 
     /**
      * 数据记录时间
@@ -50,8 +52,8 @@ public class DBMetaData {
      */
     public void addUpdateSubscribe(String tableName) {
         String upTableName = tableName.toUpperCase();
-        if (!this.subjectTableNameList.contains(upTableName)) {
-            this.subjectTableNameList.add(upTableName);
+        if (!this.subscribeTableNameList.contains(upTableName)) {
+            this.subscribeTableNameList.add(upTableName);
         }
     }
 
@@ -99,7 +101,7 @@ public class DBMetaData {
         DBTableSerializableHelper tableSerializableHelper = new DBTableSerializableHelper(this.getKeyJdbcKey());
         tableSerializableHelper.remove();
         this.tables.clear();
-        this.subjectTableNameList.clear();
+        this.subscribeTableNameList.clear();
     }
 
     /**
@@ -132,8 +134,8 @@ public class DBMetaData {
      * @param tableName 表名称
      * @return true 是
      */
-    public boolean isSubjectUpdate(String tableName) {
-        return this.subjectTableNameList.contains(tableName.toUpperCase());
+    public boolean isSubscribeUpdate(String tableName) {
+        return this.subscribeTableNameList.contains(tableName.toUpperCase());
     }
 
     /**
@@ -141,7 +143,7 @@ public class DBMetaData {
      *
      * @param updateList 更新的表元数据信息
      */
-    void updateDbTable(List<DbTable> updateList) {
+    private void updateDbTable(List<DbTable> updateList) {
         if (this.tables == null || this.tables.isEmpty()) {
             this.tables = new ArrayList<>(updateList);
             return;
@@ -152,7 +154,7 @@ public class DBMetaData {
         for (DbTable update : updateList) {
             String tableName = update.getName().toUpperCase();
             updateDbTables.put(tableName, update);
-            this.subjectTableNameList.remove(tableName);
+            this.subscribeTableNameList.remove(tableName);
         }
 
         for (DbTable dbTable : tables) {
@@ -181,5 +183,18 @@ public class DBMetaData {
         }
 
         this.tables = list;
+    }
+
+    /**
+     * 触发订阅表元数据检测更新
+     */
+    public void triggerSubscribeListUpdate(ConnectionProxy connectionProxy, String tableName) throws SQLException {
+        if (this.isSubscribeUpdate(tableName)) {
+            DBScanner dbScanner = new DBScanner(connectionProxy.getConnection(), this.properties);
+            // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
+            List<DbTable> tables = dbScanner.findTableMetadata(this.subscribeTableNameList);
+            this.updateDbTable(tables);
+            this.success();
+        }
     }
 }

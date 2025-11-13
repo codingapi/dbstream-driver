@@ -3,7 +3,6 @@ package com.codingapi.dbstream.listener;
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.query.JdbcQuery;
 import com.codingapi.dbstream.scanner.DBMetaData;
-import com.codingapi.dbstream.scanner.DBScanner;
 import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.scanner.DbTable;
 import lombok.Getter;
@@ -356,10 +355,6 @@ public class SQLRunningState {
      * @param tableName 表名
      */
     public void triggerDBMetaData(String tableName) throws SQLException {
-        // 当前表需要更新时，将会连同所有带更新的表一次性全部更新
-        if (this.metaData.isSubjectUpdate(tableName)) {
-            DBScanner dbScanner = new DBScanner(connectionProxy.getConnection(), getDriverProperties());
-            dbScanner.updateMetadata(this.metaData);
-        }
+        this.metaData.triggerSubscribeListUpdate(connectionProxy,tableName);
     }
 }

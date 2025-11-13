@@ -18,7 +18,7 @@ import java.util.Properties;
 public class DBScanner {
 
     private final Connection connection;
-    private final DBMetaData dbMetaData;
+    private final Properties info;
     private final DatabaseMetaData metaData;
     private final String catalog;
     private final String schema;
@@ -29,7 +29,7 @@ public class DBScanner {
         this.schema = connection.getSchema();
         this.metaData = connection.getMetaData();
         this.catalog = connection.getCatalog();
-        this.dbMetaData = new DBMetaData(info);
+        this.info = info;
         String jdbcKey = JdbcPropertyUtils.getOrGenerateJdbcKey(info,this.schema);
         this.dbTableSerializableHelper = new DBTableSerializableHelper(jdbcKey);
     }
@@ -37,13 +37,13 @@ public class DBScanner {
 
     private void loadDbTableInfo(String tableName, DbTable tableInfo) throws SQLException {
         String dbTableName = tableInfo.getName();
-        List<String> keys = dbTableSerializableHelper.loadPrimaryKeyByLocalFile(tableInfo.getName());
+        List<String> keys = dbTableSerializableHelper.loadTablePrimaryKeysByKeyFile(tableInfo.getName());
         if (dbTableSerializableHelper.hasSerialize(dbTableName)) {
             DbTable dbTableCache = dbTableSerializableHelper.deserialize(dbTableName);
             tableInfo.setColumns(dbTableCache.getColumns());
             tableInfo.setPrimaryKeys(dbTableCache.getPrimaryKeys());
-            tableInfo.loadLocalPrimaryKeys(keys);
-            tableInfo.reloadPrimaryColumns();
+            tableInfo.validateAndAddPrimaryKeys(keys);
+            tableInfo.reloadPrimaryKeyColumns();
             return;
         }
 
@@ -67,8 +67,8 @@ public class DBScanner {
             tableInfo.addPrimaryKey(pkColumn);
         }
         pkRs.close();
-        tableInfo.loadLocalPrimaryKeys(keys);
-        tableInfo.reloadPrimaryColumns();
+        tableInfo.validateAndAddPrimaryKeys(keys);
+        tableInfo.reloadPrimaryKeyColumns();
 
         dbTableSerializableHelper.serialize(tableInfo);
     }
@@ -77,6 +77,7 @@ public class DBScanner {
      * 扫描数据库中的所有表、字段和主键信息，并缓存
      */
     public DBMetaData loadMetadata() throws SQLException {
+        DBMetaData dbMetaData = new DBMetaData(info);
         DatabaseMetaData metaData = connection.getMetaData();
         String catalog = connection.getCatalog();
         String schema = connection.getSchema();
@@ -98,29 +99,28 @@ public class DBScanner {
 
 
     /**
-     * 更新对应表的元数据信息
+     * 获取元数据表信息
      *
-     * @param dbMetaData 数据库下的所有元数据信息
+     * @param tableNames 查询的表名称
      * @throws SQLException SQLException
      */
-    public void updateMetadata(DBMetaData dbMetaData) throws SQLException {
+    public List<DbTable> findTableMetadata(List<String> tableNames) throws SQLException {
         DatabaseMetaData metaData = connection.getMetaData();
         String catalog = connection.getCatalog();
         String schema = connection.getSchema();
         ResultSet tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
-        List<DbTable> updateList = new ArrayList<>();
+        List<DbTable> tableList = new ArrayList<>();
         while (tables.next()) {
             String tableName = tables.getString("TABLE_NAME");
             String remarks = tables.getString("REMARKS");
-            if (dbMetaData.isSubjectUpdate(tableName)) {
+            if (tableNames.contains(tableName.toUpperCase())) {
                 DbTable tableInfo = new DbTable(tableName, remarks);
                 this.loadDbTableInfo(tableName, tableInfo);
-                updateList.add(tableInfo);
+                tableList.add(tableInfo);
             }
         }
         tables.close();
-        dbMetaData.updateDbTable(updateList);
-        dbMetaData.success();
+        return tableList;
     }
 
 

@@ -50,7 +50,7 @@ public class DBTableSerializableHelper {
     /**
      * 通过表名称读取手动配置主键信息
      */
-    public List<String> loadPrimaryKeyByLocalFile(String tableName) {
+    public List<String> loadTablePrimaryKeysByKeyFile(String tableName) {
         File file = new File(this.path + "/" + tableName + ".key");
         List<String> data = FileReaderUtils.read(file);
         if (data != null && !data.isEmpty()) {
