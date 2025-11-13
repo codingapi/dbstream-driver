@@ -60,6 +60,18 @@ public class DBEvent {
     @Getter
     private String transactionKey;
 
+    public boolean isInsert(){
+        return this.type == EventType.INSERT;
+    }
+
+    public boolean isDelete(){
+        return this.type == EventType.DELETE;
+    }
+
+    public boolean isUpdate(){
+        return this.type == EventType.UPDATE;
+    }
+
     @Override
     public String toString() {
         return "DBEvent{" +

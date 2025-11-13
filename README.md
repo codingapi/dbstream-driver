@@ -202,11 +202,21 @@ USERNAME,ID
 DBStreamContext.getInstance().addEventPusher(DBEventPusher pusher);
 ```
 
+```java
+// 清空所有的事件推送器
+DBStreamContext.getInstance().cleanEventPushers();
+```
+
 #### 监听器相关
 
 ```java
 // 添加 SQL 执行监听器
 DBStreamContext.getInstance().addListener(SQLExecuteListener listener);
+```
+
+```java
+// 清空所有自定义的SQL 执行监听器
+DBStreamContext.getInstance().cleanCustomListeners();
 ```
 
 #### 数据库表支持判断

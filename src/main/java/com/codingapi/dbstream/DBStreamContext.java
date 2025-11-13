@@ -40,6 +40,15 @@ public class DBStreamContext {
         SQLRunningContext.getInstance().addListener(sqlExecuteListener);
     }
 
+
+    /**
+     * 清空所有自定义的SQL执行订阅
+     */
+    public void cleanCustomListeners(){
+        SQLRunningContext.getInstance().cleanCustomListeners();
+    }
+
+
     /**
      * 是否支持SQL 拦截代理分析
      *
@@ -66,6 +75,14 @@ public class DBStreamContext {
      */
     public void addEventPusher(DBEventPusher dbEventPusher) {
         DBEventContext.getInstance().addPusher(dbEventPusher);
+    }
+
+
+    /**
+     * 清空DB事件推送
+     */
+    public void cleanEventPushers() {
+        DBEventContext.getInstance().clean();
     }
 
     /**
@@ -116,5 +133,6 @@ public class DBStreamContext {
     public void clear(String jdbcKey) {
         DBMetaContext.getInstance().clear(jdbcKey);
     }
+
 
 }

@@ -1,5 +1,8 @@
 package com.codingapi.dbstream.listener;
 
+import com.codingapi.dbstream.listener.dbevent.DeleteEventListener;
+import com.codingapi.dbstream.listener.dbevent.InsertEventListener;
+import com.codingapi.dbstream.listener.dbevent.UpdateEventListener;
 import lombok.Getter;
 
 import java.sql.SQLException;
@@ -18,6 +21,19 @@ public class SQLRunningContext {
     @Getter
     private final List<SQLExecuteListener> listeners = new CopyOnWriteArrayList<>();
 
+    private final InsertEventListener insertEventListener = new InsertEventListener();
+    private final DeleteEventListener deleteEventListener = new DeleteEventListener();
+    private final UpdateEventListener updateEventListener = new UpdateEventListener();
+
+    /**
+     * 添加系统默认订阅器
+     */
+    public void addSystemListeners() {
+        this.addListener(insertEventListener);
+        this.addListener(deleteEventListener);
+        this.addListener(updateEventListener);
+    }
+
     private SQLRunningContext() {
 
     }
@@ -27,9 +43,10 @@ public class SQLRunningContext {
      */
     public void addListener(SQLExecuteListener listener) {
         if (listener != null) {
-            listeners.add(listener);
+            if (!listeners.contains(listener)) {
+                listeners.add(listener);
+            }
         }
-
         listeners.sort(Comparator.comparingInt(SQLExecuteListener::order));
     }
 
@@ -54,5 +71,17 @@ public class SQLRunningContext {
         for (SQLExecuteListener listener : listeners) {
             listener.before(executeState);
         }
+    }
+
+
+    /**
+     * 清空自定义的订阅
+     */
+    public void cleanCustomListeners() {
+        listeners.removeIf(listener ->
+                !(listener.equals(insertEventListener)
+                        || listener.equals(updateEventListener)
+                        || listener.equals(deleteEventListener))
+        );
     }
 }

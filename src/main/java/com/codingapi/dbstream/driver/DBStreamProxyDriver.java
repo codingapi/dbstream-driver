@@ -1,9 +1,6 @@
 package com.codingapi.dbstream.driver;
 
 import com.codingapi.dbstream.listener.SQLRunningContext;
-import com.codingapi.dbstream.listener.dbevent.DeleteEventListener;
-import com.codingapi.dbstream.listener.dbevent.InsertEventListener;
-import com.codingapi.dbstream.listener.dbevent.UpdateEventListener;
 import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
@@ -26,16 +23,14 @@ public class DBStreamProxyDriver implements Driver {
 
     static {
         String version = VersionUtils.getDriverVersion();
-        System.out.println("<--- dbstream-driver successfully loaded, version: "+version+" --->");
+        System.out.println("\n<--- dbstream-driver successfully loaded, version: "+version+" --->\n");
         try {
             DriverManager.registerDriver(new DBStreamProxyDriver());
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to register DBStreamProxyDriver", e);
             throw new RuntimeException("Failed to register DBStreamProxyDriver", e);
         }
-        SQLRunningContext.getInstance().addListener(new DeleteEventListener());
-        SQLRunningContext.getInstance().addListener(new InsertEventListener());
-        SQLRunningContext.getInstance().addListener(new UpdateEventListener());
+        SQLRunningContext.getInstance().addSystemListeners();
         LOGGER.info("DBStreamProxyDriver initialized and registered");
     }
 

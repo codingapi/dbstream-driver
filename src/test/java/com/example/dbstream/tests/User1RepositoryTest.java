@@ -2,6 +2,9 @@ package com.example.dbstream.tests;
 
 
 import com.codingapi.dbstream.DBStreamContext;
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.DBEventPusher;
+import com.codingapi.dbstream.query.JdbcQuery;
 import com.example.dbstream.entity.User1;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User1Repository;
@@ -13,8 +16,9 @@ import org.springframework.test.annotation.Rollback;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
@@ -33,9 +37,19 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test1() {
+
         DBStreamContext.getInstance().addListener(new MySQLListener());
 
-        userRepository.deleteAll();
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=4);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
         User1 user = new User1();
         user.setUsername("admin");
         user.setPassword("admin");
@@ -59,7 +73,6 @@ class User1RepositoryTest {
         int deleteRows = userRepository.deleteByUsername("admin");
         System.out.println("deleteRows:" + deleteRows);
 
-        userRepository.deleteAll();
     }
 
     /**
@@ -69,6 +82,18 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test2() {
+        DBStreamContext.getInstance().cleanEventPushers();
+
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertEquals(1, events.size());
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                    assertTrue(event.isInsert());
+                }
+            }
+        });
         User1 user = new User1();
         user.setUsername("admin");
         user.setPassword("admin");
@@ -86,6 +111,16 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test3() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                    assertTrue(event.isUpdate());
+                }
+            }
+        });
         userRepository.resetPassword("123456");
     }
 
@@ -96,6 +131,16 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test4() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=2);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
         User1 user = new User1();
         user.setUsername("admin");
         user.setPassword("admin");
@@ -113,6 +158,16 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test5() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                for (DBEvent event:events){
+                    assertTrue(event.isInsert());
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
         User1 user = new User1();
         user.setUsername("admin");
         user.setPassword("admin");
@@ -120,8 +175,6 @@ class User1RepositoryTest {
         user.setNickname("admin");
 
         userRepository.save(user);
-
-        userRepository.deleteAll();
     }
 
 
@@ -132,6 +185,29 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(false)
     void test6() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=2);
+                int hasPrimaryEventCount = 0;
+                for (DBEvent event:events){
+                    assertTrue(event.isInsert());
+                    if(event.hasPrimaryKeys()){
+                        hasPrimaryEventCount++;
+                    }
+                }
+                assertEquals(1,hasPrimaryEventCount);
+            }
+        });
+        User1 user = new User1();
+        user.setUsername("admin");
+        user.setPassword("admin");
+        user.setEmail("admin@example.com");
+        user.setNickname("admin");
+
+        userRepository.save(user);
+
         userRepository.insertIntoFromSelect();
     }
 
@@ -142,6 +218,16 @@ class User1RepositoryTest {
     @Test
     @Transactional
     void test7() {
+
+        DBStreamContext.getInstance().cleanEventPushers();
+        AtomicBoolean running = new AtomicBoolean(false);
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+               running.set(true);
+            }
+        });
+
         User1 user = new User1();
         user.setUsername("admin");
         user.setPassword("admin");
@@ -153,6 +239,8 @@ class User1RepositoryTest {
             int result = 100 / 0;
             System.out.println(result);
         });
+
+        assertFalse(running.get());
     }
 
     /**
@@ -162,6 +250,17 @@ class User1RepositoryTest {
     @Transactional
     @Rollback(value = false)
     void test8() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=15);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+
         List<User1> list = userRepository.findAll();
         for (User1 user : list) {
             user.setEmail("111");
@@ -179,6 +278,7 @@ class User1RepositoryTest {
         }
         entityManager.flush();
         entityManager.clear();
+
 
     }
 

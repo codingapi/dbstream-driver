@@ -2,6 +2,9 @@ package com.example.dbstream.tests;
 
 
 import com.codingapi.dbstream.DBStreamContext;
+import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.DBEventPusher;
+import com.codingapi.dbstream.query.JdbcQuery;
 import com.example.dbstream.entity.User2;
 import com.example.dbstream.listener.MySQLListener;
 import com.example.dbstream.repository.User2Repository;
@@ -14,7 +17,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest
@@ -31,6 +37,19 @@ class User2RepositoryTest {
     @Rollback(false)
     void test1() {
         DBStreamContext.getInstance().addListener(new MySQLListener());
+
+        DBStreamContext.getInstance().addListener(new MySQLListener());
+
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=4);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
 
         userRepository.deleteAll();
         User2 user = new User2();
@@ -67,7 +86,19 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test2() {
-        userRepository.deleteAll();
+        DBStreamContext.getInstance().cleanEventPushers();
+
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertEquals(1, events.size());
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                    assertTrue(event.isInsert());
+                }
+            }
+        });
+
         User2 user = new User2();
         user.setId(2);
         user.setUsername("admin");
@@ -76,7 +107,6 @@ class User2RepositoryTest {
         user.setNickname("admin");
 
         userRepository.save(user);
-        userRepository.deleteAll();
     }
 
 
@@ -87,6 +117,17 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test3() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                    assertTrue(event.isUpdate());
+                }
+            }
+        });
+
         userRepository.resetPassword("123456");
     }
 
@@ -97,6 +138,17 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test4() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=2);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+
         User2 user = new User2();
         user.setId(4);
         user.setUsername("admin");
@@ -115,16 +167,24 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test5() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                for (DBEvent event:events){
+                    assertTrue(event.isInsert());
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+
         User2 user = new User2();
         user.setId(5);
         user.setUsername("admin");
         user.setPassword("admin");
         user.setEmail("admin@example.com");
         user.setNickname("admin");
-
         userRepository.save(user);
-
-        userRepository.deleteAll();
     }
 
 
@@ -134,6 +194,15 @@ class User2RepositoryTest {
     @Test
     @Transactional
     void test6() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        AtomicBoolean running = new AtomicBoolean(false);
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                running.set(true);
+            }
+        });
+
         User2 user = new User2();
         user.setId(6);
         user.setUsername("admin");
@@ -146,6 +215,8 @@ class User2RepositoryTest {
             int result = 100 / 0;
             System.out.println(result);
         });
+
+        assertFalse(running.get());
     }
 
 
@@ -156,6 +227,25 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test7() {
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertTrue(events.size()>=2);
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+
+        User2 user = new User2();
+        user.setId(7);
+        user.setUsername("admin");
+        user.setPassword("admin");
+        user.setEmail("admin@example.com");
+        user.setNickname("admin");
+        userRepository.save(user);
+
         userRepository.resetPasswordByUsername1("admin");
     }
 
@@ -167,7 +257,17 @@ class User2RepositoryTest {
     @Transactional
     @Rollback(false)
     void test8() {
-        userRepository.deleteAll();
+        DBStreamContext.getInstance().cleanEventPushers();
+        DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
+            @Override
+            public void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
+                assertEquals(1,events.size());
+                for (DBEvent event:events){
+                    assertTrue(event.hasPrimaryKeys());
+                }
+            }
+        });
+
         userRepository.staticSave();
     }
 

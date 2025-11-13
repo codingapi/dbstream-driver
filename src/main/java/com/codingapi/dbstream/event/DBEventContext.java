@@ -44,4 +44,7 @@ public class DBEventContext {
         }
     }
 
+    public void clean() {
+        this.pushers.clear();
+    }
 }
