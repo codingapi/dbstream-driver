@@ -9,14 +9,15 @@ import com.codingapi.dbstream.scanner.DBMetaContext;
 import com.codingapi.dbstream.scanner.DBMetaData;
 import com.codingapi.dbstream.scanner.DBScanner;
 import com.codingapi.dbstream.utils.JdbcPropertyUtils;
+import com.codingapi.dbstream.utils.VersionUtils;
 
 import java.sql.*;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DBStreamProxyDriver implements Driver {
 
@@ -24,6 +25,8 @@ public class DBStreamProxyDriver implements Driver {
     private static final Logger LOGGER = Logger.getLogger(DBStreamProxyDriver.class.getName());
 
     static {
+        String version = VersionUtils.getDriverVersion();
+        System.out.println("<--- dbstream-driver version :" + version + "--->");
         try {
             DriverManager.registerDriver(new DBStreamProxyDriver());
         } catch (Exception e) {

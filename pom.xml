@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.codingapi.dbstream</groupId>
     <artifactId>dbstream-driver</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 
     <url>https://github.com/codingapi/dbstream-driver</url>
     <name>dbstream-driver</name>
@@ -28,6 +28,7 @@
         <maven.source.version>3.3.1</maven.source.version>
         <maven.sonatype.version>0.8.0</maven.sonatype.version>
         <maven.javadoc.version>3.6.3</maven.javadoc.version>
+        <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven.gpg.version>3.0.1</maven.gpg.version>
 
         <!-- project dependencies properties-->
@@ -111,6 +112,20 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
