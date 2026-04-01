@@ -51,7 +51,7 @@ public abstract class DBEventListener implements SQLExecuteListener {
                 // 判断是否支持对该表的DB事件支持
                 if (dbTable != null && DBStreamContext.getInstance().support(runningState.getDriverProperties(), dbTable)) {
                     // 是否批量模式判断
-                    if (runningState.isBatchMode()) {
+                    if (runningState.isJdbcBatchMode()) {
                         // 批量模式下，将获取批量的SQL执行结果数据
                         List<SQLRunningState> runningStateList = runningState.getBatchSQLRunningStateList();
                         for (int i = 0; i < runningStateList.size(); i++) {
@@ -114,8 +114,8 @@ public abstract class DBEventListener implements SQLExecuteListener {
         // 获取事务标识信息
         String transactionKey = runningState.getTransactionKey();
         if (this.support(sql)) {
-            // 批量模式
-            if (runningState.isBatchMode()) {
+            // Jdbc批量模式
+            if (runningState.isJdbcBatchMode()) {
                 List<SQLRunningState> runningStateList = runningState.getBatchSQLRunningStateList();
                 int batchSize = runningStateList.size();
 
@@ -134,7 +134,7 @@ public abstract class DBEventListener implements SQLExecuteListener {
                 // 清空本地缓存数据
                 DBEventCacheContext.getInstance().remove();
             } else {
-                // 非批量模式
+                // 非Jdbc批量模式
                 DBEventParser dataParser = DBEventCacheContext.getInstance().get();
                 if (dataParser != null) {
                     // 获取DB事件信息

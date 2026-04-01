@@ -109,9 +109,8 @@ public class InsertDBEventParser implements DBEventParser {
         this.dataList = this.executeState.query(query, queryParams);
     }
 
-    private void loadDefaultInsertDataList() throws SQLException {
-        List<InsertSQLParser.InsertValue> values = this.sqlParser.getValues();
-        List<Object> paramList = this.executeState.getListParams();
+
+    private Map<String, Object> loadDefaultInsertData(List<Object> paramList,List<InsertSQLParser.InsertValue> values) throws SQLException{
         Map<String, Object> data = new HashMap<>();
         for (int i = 0; i < columns.size(); i++) {
             String column = columns.get(i);
@@ -134,7 +133,23 @@ public class InsertDBEventParser implements DBEventParser {
             }
             data.put(column, value);
         }
-        dataList.add(data);
+        return data;
+    }
+
+    private void loadDefaultInsertDataList() throws SQLException {
+        if(this.sqlParser.isBatchInsertSQL()){
+            List<List<InsertSQLParser.InsertValue>> valueList = this.sqlParser.getBatchValues();
+            List<Object> paramList = this.executeState.getListParams();
+            for (List<InsertSQLParser.InsertValue> values: valueList){
+                Map<String, Object> data =  this.loadDefaultInsertData(paramList,values);
+                dataList.add(data);
+            }
+        }else {
+            List<InsertSQLParser.InsertValue> values = this.sqlParser.getValues();
+            List<Object> paramList = this.executeState.getListParams();
+            Map<String, Object> data =  this.loadDefaultInsertData(paramList,values);
+            dataList.add(data);
+        }
     }
 
 }

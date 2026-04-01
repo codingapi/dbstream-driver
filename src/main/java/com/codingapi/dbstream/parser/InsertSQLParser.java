@@ -74,6 +74,25 @@ public class InsertSQLParser implements SQLParser {
     }
 
     /**
+     * 是否为批量的insert语句类型
+     * INSERT INTO user (id,name) VALUES (?,?),(?,?)
+     */
+    public boolean isBatchInsertSQL() {
+        if (!isDefaultInsertSQL()) {
+            return false;
+        }
+
+        String valuesSQL = getValuesSQL();
+        if (valuesSQL == null) {
+            return false;
+        }
+
+        String normalized = valuesSQL.replaceAll("\\s+", "");
+        return normalized.contains("),(");
+    }
+
+
+    /**
      * 提取 VALUES 或 SELECT 后面的 SQL 内容（包含完整结构）
      * 示例:
      * INSERT INTO user (id,name) SELECT id,name FROM other
@@ -103,6 +122,100 @@ public class InsertSQLParser implements SQLParser {
         return null;
     }
 
+    private List<String> splitValueGroups(String input) {
+        List<String> groups = new ArrayList<>();
+
+        int level = 0;
+        StringBuilder current = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '(') {
+                if (level > 0) {
+                    current.append(c);
+                }
+                level++;
+            } else if (c == ')') {
+                level--;
+                if (level > 0) {
+                    current.append(c);
+                } else {
+                    // 一个完整 group
+                    groups.add("(" + current.toString() + ")");
+                    current.setLength(0);
+                }
+            } else if (c == ',' && level == 0) {
+                // group 之间的逗号，忽略
+                continue;
+            } else {
+                if (level > 0) {
+                    current.append(c);
+                }
+            }
+        }
+
+        return groups;
+    }
+
+    public List<List<InsertValue>> getBatchValues() {
+        List<List<InsertValue>> result = new ArrayList<>();
+
+        String valuesSQL = getValuesSQL();
+        if (valuesSQL == null) {
+            return result;
+        }
+
+        // 去掉 VALUES 关键字
+        String normalized = valuesSQL.trim();
+        // 如果没有以 ( 开头，补一个
+        if (!normalized.startsWith("(")) {
+            normalized = "(" + normalized;
+        }
+
+        // 如果没有以 ) 结尾，补一个
+        if (!normalized.endsWith(")")) {
+            normalized = normalized + ")";
+        }
+
+        List<String> groups = splitValueGroups(normalized);
+
+        int jdbcIndex = 0;
+
+        for (String group : groups) {
+            // 去掉外层括号
+            String inner = group.trim();
+            if (inner.startsWith("(") && inner.endsWith(")")) {
+                inner = inner.substring(1, inner.length() - 1);
+            }
+
+            List<String> values = SQLUtils.parseInsertSQLValues(inner);
+            List<InsertValue> row = new ArrayList<>();
+
+            for (String value : values) {
+                InsertValue insertValue = new InsertValue();
+
+                String v = value.trim();
+                if ("?".equals(v)) {
+                    insertValue.setType(ValueType.JDBC);
+                    jdbcIndex++;
+                    insertValue.setValue("?" + jdbcIndex);
+                } else if (SQLUtils.isSQLKeyword(v) || v.startsWith("(")) {
+                    insertValue.setType(ValueType.SELECT);
+                    insertValue.setValue(v);
+                } else {
+                    insertValue.setType(ValueType.STATIC);
+                    insertValue.setValue(v);
+                }
+
+                row.add(insertValue);
+            }
+
+            result.add(row);
+        }
+
+        return result;
+    }
 
     public List<InsertValue> getValues() {
         List<InsertValue> insertValues = new ArrayList<>();

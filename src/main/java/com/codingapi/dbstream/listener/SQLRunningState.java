@@ -33,7 +33,7 @@ public class SQLRunningState {
      * 批量模式标识
      */
     @Getter
-    private boolean batchMode = false;
+    private boolean jdbcBatchMode = false;
 
     /**
      * 当前绑定sql
@@ -112,7 +112,7 @@ public class SQLRunningState {
      * @param sql 执行sql
      */
     public void addBatch(String sql) {
-        batchMode = true;
+        jdbcBatchMode = true;
         SQLRunningParam executeParam = new SQLRunningParam();
         executeParam.setSql(sql);
         this.sqlRunningParams.add(executeParam);
@@ -198,7 +198,7 @@ public class SQLRunningState {
      * @return List
      */
     public List<Object> getListParams() {
-        if (batchMode) {
+        if (jdbcBatchMode) {
             if (this.sqlRunningParams.isEmpty()) {
                 return new ArrayList<>();
             }
@@ -218,7 +218,7 @@ public class SQLRunningState {
      * @return List
      */
     public List<SQLRunningState> getBatchSQLRunningStateList() {
-        if (this.batchMode) {
+        if (this.jdbcBatchMode) {
             if (this.sqlRunningParams.isEmpty()) {
                 return new ArrayList<>();
             }
@@ -304,8 +304,7 @@ public class SQLRunningState {
                     list.add(map);
                 }
             }
-        } catch (SQLException ignored) {
-        }
+        } catch (SQLException ignored) {}
         return list;
     }
 
