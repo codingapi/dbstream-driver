@@ -17,9 +17,14 @@ public class DbColumn implements Serializable {
      */
     private String name;
     /**
-     * 字段类型
+     * 数据库字段类型
      */
     private String type;
+
+    /**
+     * java数据对应类型
+     */
+    private Class<?> javaType;
     /**
      * 是否可为空
      */

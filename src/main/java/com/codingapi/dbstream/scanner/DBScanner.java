@@ -30,7 +30,7 @@ public class DBScanner {
         this.metaData = connection.getMetaData();
         this.catalog = connection.getCatalog();
         this.info = info;
-        String jdbcKey = JdbcPropertyUtils.getOrGenerateJdbcKey(info,this.schema);
+        String jdbcKey = JdbcPropertyUtils.getOrGenerateJdbcKey(info, this.schema);
         this.dbTableSerializableHelper = new DBTableSerializableHelper(jdbcKey);
     }
 
@@ -56,6 +56,7 @@ public class DBScanner {
             column.setNullable(columns.getInt("NULLABLE") == DatabaseMetaData.columnNullable);
             column.setComment(columns.getString("REMARKS"));
             column.setSize(columns.getInt("COLUMN_SIZE"));
+            column.setJavaType(JavaDBTypeConvertor.toJavaType(columns.getInt("DATA_TYPE")));
             tableInfo.addColum(column);
         }
         columns.close();

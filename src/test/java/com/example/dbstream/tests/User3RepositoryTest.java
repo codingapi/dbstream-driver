@@ -60,6 +60,8 @@ class User3RepositoryTest {
     @Rollback(value = false)
     @Order(2)
     void test2() {
+        DBStreamContext.getInstance().cleanEventPushers();
+
         List<String> jdbcKeys = DBStreamContext.getInstance().loadDbKeys();
         assertEquals(1, jdbcKeys.size());
         for (String jdbcKey : jdbcKeys) {
@@ -67,7 +69,7 @@ class User3RepositoryTest {
             assertNotNull(dbMetaData);
             dbMetaData.addUpdateSubscribe("m_user_3");
         }
-        DBStreamContext.getInstance().cleanEventPushers();
+
 
         DBStreamContext.getInstance().addEventPusher(new DBEventPusher() {
             @Override

@@ -114,6 +114,7 @@ public class InsertDBEventParser implements DBEventParser {
         Map<String, Object> data = new HashMap<>();
         for (int i = 0; i < columns.size(); i++) {
             String column = columns.get(i);
+            DbColumn dbColumn = dbTable.getColumnByName(column);
             InsertSQLParser.InsertValue insertValue = values.get(i);
             Object value = insertValue;
 
@@ -129,7 +130,7 @@ public class InsertDBEventParser implements DBEventParser {
             } else if (insertValue.isJdbc()) {
                 value = paramList.get(insertValue.getJdbcParamIndex() - 1);
             } else {
-                value = insertValue.getValue();
+                value = insertValue.getValue(dbColumn);
             }
             data.put(column, value);
         }

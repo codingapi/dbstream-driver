@@ -1,9 +1,11 @@
 package com.codingapi.dbstream.parser;
 
+import com.codingapi.dbstream.scanner.DbColumn;
 import com.codingapi.dbstream.utils.SQLUtils;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -255,6 +257,49 @@ public class InsertSQLParser implements SQLParser {
 
         public int getJdbcParamIndex() {
             return Integer.parseInt(this.value.replace("?", ""));
+        }
+
+        private String getTrimString() {
+            if (value != null && !value.isEmpty()) {
+                if (value.startsWith("'") && value.endsWith("'")) {
+                    return value.replace("'", "");
+                }
+                if (value.startsWith("\"") && value.endsWith("\"")) {
+                    return value.replace("\"", "");
+                }
+                return value;
+            }
+            return value;
+        }
+
+        public Object getValue(DbColumn dbColumn) {
+            String value = this.getTrimString();
+            if (value == null) {
+                return null;
+            }
+            Class<?> jdbcType = dbColumn.getJavaType();
+            if (jdbcType.equals(String.class)) {
+                return value;
+            }
+            if (jdbcType.equals(Integer.class)) {
+                return Integer.parseInt(value);
+            }
+            if (jdbcType.equals(Long.class)) {
+                return Long.parseLong(value);
+            }
+            if (jdbcType.equals(Double.class)) {
+                return Double.parseDouble(value);
+            }
+            if (jdbcType.equals(Float.class)) {
+                return Float.parseFloat(value);
+            }
+            if (jdbcType.equals(BigDecimal.class)) {
+                return new BigDecimal(value);
+            }
+            if (jdbcType.equals(Boolean.class)) {
+                return "true".equalsIgnoreCase(value);
+            }
+            return value;
         }
     }
 
