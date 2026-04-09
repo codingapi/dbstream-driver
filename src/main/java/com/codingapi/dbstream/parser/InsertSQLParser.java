@@ -281,20 +281,25 @@ public class InsertSQLParser implements SQLParser {
             if (jdbcType.equals(String.class)) {
                 return value;
             }
-            if (jdbcType.equals(Integer.class)) {
-                return Integer.parseInt(value);
-            }
-            if (jdbcType.equals(Long.class)) {
-                return Long.parseLong(value);
-            }
-            if (jdbcType.equals(Double.class)) {
-                return Double.parseDouble(value);
-            }
-            if (jdbcType.equals(Float.class)) {
-                return Float.parseFloat(value);
-            }
-            if (jdbcType.equals(BigDecimal.class)) {
-                return new BigDecimal(value);
+
+            try {
+                if (jdbcType.equals(Integer.class)) {
+                    return Integer.parseInt(value);
+                }
+                if (jdbcType.equals(Long.class)) {
+                    return Long.parseLong(value);
+                }
+                if (jdbcType.equals(Double.class)) {
+                    return Double.parseDouble(value);
+                }
+                if (jdbcType.equals(Float.class)) {
+                    return Float.parseFloat(value);
+                }
+                if (jdbcType.equals(BigDecimal.class)) {
+                    return new BigDecimal(value);
+                }
+            } catch (Exception ignore) {
+                return value;
             }
             if (jdbcType.equals(Boolean.class)) {
                 return "true".equalsIgnoreCase(value);
