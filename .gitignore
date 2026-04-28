@@ -33,3 +33,6 @@ build/
 .vscode/
 *.db
 .dbstream/
+
+## MacOS ###
+.DS_Store

@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "commons@coding-marketplace": true,
+    "backend@coding-marketplace": true
+  }
+}
