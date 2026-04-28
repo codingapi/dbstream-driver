@@ -6,7 +6,7 @@
 
 - groupId: com.codingapi.dbstream
 - artifactId: dbstream-driver
-- version: 1.0.17
+- version: 1.0.18
 - packaging: jar
 
 ## 关联关系
@@ -66,8 +66,8 @@ com.codingapi.dbstream/
 │       ├── DeleteEventListener.java     # DELETE 监听器（order=100）
 │       └── DBEventCacheContext.java     # ThreadLocal 缓存 DBEventParser（支持批量）
 ├── scanner/
-│   ├── DBScanner.java                   # 数据库元数据扫描（DatabaseMetaData）
-│   ├── DBMetaData.java                  # 单数据源全部表元数据
+│   ├── DBScanner.java                   # 数据库元数据扫描（DatabaseMetaData），支持全量/单表/按名称列表扫描
+│   ├── DBMetaData.java                  # 单数据源全部表元数据，支持按表名/全量刷新
 │   ├── DBMetaContext.java               # 元数据缓存（单例，key=jdbcKey）
 │   ├── DbTable.java                     # 表元数据（列、主键）
 │   ├── DbColumn.java                    # 列元数据（类型、是否主键）
@@ -78,7 +78,7 @@ com.codingapi.dbstream/
 ├── query/
 │   └── JdbcQuery.java                   # 通过真实 Connection 执行 SELECT 的工具
 ├── serializable/
-│   └── DBTableSerializableHelper.java   # DbTable Java 序列化至 .dbstream/ 缓存目录
+│   └── DBTableSerializableHelper.java   # DbTable Java 序列化至 .dbstream/ 缓存目录，支持按表名清除
 └── utils/
     ├── SQLUtils.java                    # SQL 分类判断（isInsert/isUpdate/isDelete）
     ├── JdbcPropertyUtils.java           # jdbcKey 生成：sha256(jdbcUrl#schema)
@@ -104,7 +104,11 @@ com.codingapi.dbstream/
 
 ### 4. 数据库元数据扫描与缓存
 
-`DBScanner` 通过 `java.sql.DatabaseMetaData` 扫描表结构，序列化到 `.dbstream/<jdbcKey>/` 目录缓存。支持 `.key` 文件手动指定主键。
+`DBScanner` 通过 `java.sql.DatabaseMetaData` 扫描表结构，序列化到 `.dbstream/<jdbcKey>/` 目录缓存。支持 `.key` 文件手动指定主键。提供 `scanTable(tableName)` 按单表扫描、`scanAllTables()` 全量扫描接口。
+
+### 5. 元数据动态刷新
+
+`DBMetaData` 支持运行时按表名（`refreshTable`）或全量（`refreshAll`）刷新元数据，适用于动态 DDL 场景。刷新时先清除序列化缓存再重新扫描，更新内存中已有表数据并追加新表。通过 `DBStreamContext` 暴露公共 API，接受标准 `java.sql.Connection`。
 
 ## 对外 API
 
@@ -122,7 +126,10 @@ com.codingapi.dbstream/
 | `setDbEventSupporter(DBEventSupporter)` | 设置表级事件支持过滤器 |
 | `getMetaData(jdbcKey)` | 获取指定数据源元数据 |
 | `loadDbKeys()` | 列出所有已注册数据源 key |
+| `metaDataList()` | 返回全部数据源元数据列表 |
 | `clearAll()` / `clear(jdbcKey)` | 清除元数据缓存 |
+| `refreshTable(Connection, jdbcKey, tableName)` | 刷新指定表的元数据（清除缓存后重新扫描） |
+| `refreshAll(Connection, jdbcKey)` | 全量刷新指定数据源的元数据 |
 
 ### SQLExecuteListener（`com.codingapi.dbstream.listener.SQLExecuteListener`）
 
@@ -166,3 +173,7 @@ SQL 执行监听接口，按 `order()` 排序执行。
 ./mvnw package
 ./mvnw clean deploy -P ossrh
 ```
+
+## 变更说明
+
+- **2026-04-28**: 全量同步最新代码。版本号更新为 1.0.18；新增「元数据动态刷新」核心功能章节；DBStreamContext API 表补充 `metaDataList()`、`refreshTable()`、`refreshAll()`；项目结构注释同步更新

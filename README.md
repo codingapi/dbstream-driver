@@ -248,6 +248,23 @@ DBStreamContext.getInstance().clear(String jdbcKey);
 DBStreamContext.getInstance().clearAll();
 ```
 
+#### 元数据动态刷新
+
+运行时动态创建或修改表结构后，可手动触发元数据刷新，无需清除全部缓存：
+
+```java
+// 获取 jdbcKey
+String jdbcKey = DBStreamContext.getInstance().loadDbKeys().get(0);
+
+try (Connection conn = dataSource.getConnection()) {
+    // 刷新指定表的元数据（适用于 ALTER TABLE 或动态建表后）
+    DBStreamContext.getInstance().refreshTable(conn, jdbcKey, "t_order");
+
+    // 全量刷新指定数据源的所有表元数据
+    DBStreamContext.getInstance().refreshAll(conn, jdbcKey);
+}
+```
+
 ### DBEvent 事件模型
 
 数据库变更事件包含以下信息：
@@ -291,6 +308,7 @@ mvn clean test -P travis
 4. **元数据缓存**：
    - 数据库元数据会在首次连接时自动扫描并缓存
    - 如果数据库表结构发生变化，可以调用 `clear()`或`metaData.addUpdateSubscribe(String tableName);` 方法清理缓存，下次访问时会自动重新加载
+   - 运行时可通过 `refreshTable(Connection, jdbcKey, tableName)` 刷新指定表，或 `refreshAll(Connection, jdbcKey)` 全量刷新，无需清除全部缓存
 
 ## 📄 许可证
 

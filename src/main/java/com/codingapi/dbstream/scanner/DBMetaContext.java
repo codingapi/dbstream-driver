@@ -2,6 +2,8 @@ package com.codingapi.dbstream.scanner;
 
 import lombok.Getter;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +88,35 @@ public class DBMetaContext {
             dbMetaData.cleanSerializable();
         }
         cache.remove(jdbcKey);
+    }
+
+    /**
+     * 刷新指定数据源中指定表的元数据
+     *
+     * @param jdbcKey    数据源唯一标识
+     * @param connection 数据库连接
+     * @param tableName  表名称
+     * @throws SQLException SQLException
+     */
+    public void refreshTable(String jdbcKey, Connection connection, String tableName) throws SQLException {
+        DBMetaData metaData = cache.get(jdbcKey);
+        if (metaData != null) {
+            metaData.refreshTable(connection, tableName);
+        }
+    }
+
+    /**
+     * 全量刷新指定数据源的元数据
+     *
+     * @param jdbcKey    数据源唯一标识
+     * @param connection 数据库连接
+     * @throws SQLException SQLException
+     */
+    public void refreshAll(String jdbcKey, Connection connection) throws SQLException {
+        DBMetaData metaData = cache.get(jdbcKey);
+        if (metaData != null) {
+            metaData.refreshAll(connection);
+        }
     }
 
 }

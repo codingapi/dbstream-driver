@@ -79,6 +79,16 @@ public class DBTableSerializableHelper {
     }
 
     /**
+     * 删除指定表的序列化文件
+     */
+    public void removeSerialize(String tableName) {
+        File file = new File(this.path.getPath() + "/" + tableName);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+    /**
      * 是否存在序列化的表数据
      */
     public boolean hasSerialize(String tableName) {
