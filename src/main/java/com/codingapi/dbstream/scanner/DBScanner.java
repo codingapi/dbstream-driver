@@ -79,9 +79,21 @@ public class DBScanner {
      */
     public DBMetaData loadMetadata() throws SQLException {
         DBMetaData dbMetaData = new DBMetaData(info);
-        DatabaseMetaData metaData = connection.getMetaData();
-        String catalog = connection.getCatalog();
-        String schema = connection.getSchema();
+        LinkedHashMap<String, DbTable> tableMap =  this.scanAllTables();
+        dbMetaData.setTables(new ArrayList<>(tableMap.values()));
+        dbMetaData.success();
+        DBMetaContext.getInstance().update(dbMetaData);
+        return dbMetaData;
+    }
+
+
+    /**
+     * 扫描数据库中所有表的元数据，返回列表（不创建新的 DBMetaData 对象）
+     *
+     * @return 所有表的元数据列表
+     * @throws SQLException SQLException
+     */
+    public LinkedHashMap<String, DbTable> scanAllTables() throws SQLException {
         LinkedHashMap<String, DbTable> tableMap = new LinkedHashMap<>();
         ResultSet tables = metaData.getTables(catalog, schema, "%", new String[]{"TABLE"});
         while (tables.next()) {
@@ -92,12 +104,31 @@ public class DBScanner {
             tableMap.put(tableName, tableInfo);
         }
         tables.close();
-        dbMetaData.setTables(new ArrayList<>(tableMap.values()));
-        dbMetaData.success();
-        DBMetaContext.getInstance().update(dbMetaData);
-        return dbMetaData;
+        return tableMap;
     }
 
+    /**
+     * 扫描指定单张表的元数据
+     *
+     * @param tableName 表名称
+     * @return DbTable，若表不存在返回 null
+     * @throws SQLException SQLException
+     */
+    public DbTable scanTable(String tableName) throws SQLException {
+        ResultSet tables = metaData.getTables(catalog, schema, tableName, new String[]{"TABLE"});
+        try {
+            while (tables.next()) {
+                String name = tables.getString("TABLE_NAME");
+                String remarks = tables.getString("REMARKS");
+                DbTable tableInfo = new DbTable(name, remarks);
+                this.loadDbTableInfo(name, tableInfo);
+                return tableInfo;
+            }
+        } finally {
+            tables.close();
+        }
+        return null;
+    }
 
     /**
      * 获取元数据表信息

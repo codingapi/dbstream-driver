@@ -12,6 +12,8 @@ import com.codingapi.dbstream.event.DBEventPusher;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
@@ -132,6 +134,31 @@ public class DBStreamContext {
      */
     public void clear(String jdbcKey) {
         DBMetaContext.getInstance().clear(jdbcKey);
+    }
+
+    /**
+     * 刷新指定数据源中指定表的元数据。
+     * 适用于运行时动态创建或修改表结构后，手动触发元数据更新。
+     *
+     * @param connection 数据库连接
+     * @param jdbcKey    数据源唯一标识，可通过 {@link #loadDbKeys()} 获取
+     * @param tableName  需要刷新的表名称
+     * @throws SQLException 刷新失败时抛出
+     */
+    public void refreshTable(Connection connection, String jdbcKey, String tableName) throws SQLException {
+        DBMetaContext.getInstance().refreshTable(jdbcKey, connection, tableName);
+    }
+
+    /**
+     * 全量刷新指定数据源的元数据。
+     * 重新扫描所有表结构并更新缓存。
+     *
+     * @param connection 数据库连接
+     * @param jdbcKey    数据源唯一标识，可通过 {@link #loadDbKeys()} 获取
+     * @throws SQLException 刷新失败时抛出
+     */
+    public void refreshAll(Connection connection, String jdbcKey) throws SQLException {
+        DBMetaContext.getInstance().refreshAll(jdbcKey, connection);
     }
 
 

@@ -4,8 +4,10 @@ import com.codingapi.dbstream.proxy.ConnectionProxy;
 import com.codingapi.dbstream.serializable.DBTableSerializableHelper;
 import lombok.Getter;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+
 
 /**
  * 数据库所有表的元数据信息
@@ -196,5 +198,36 @@ public class DBMetaData {
             this.updateDbTable(tables);
             this.success();
         }
+    }
+
+    /**
+     * 刷新指定表的元数据
+     *
+     * @param connection 数据库连接
+     * @param tableName  表名称
+     * @throws SQLException SQLException
+     */
+    public void refreshTable(Connection connection, String tableName) throws SQLException {
+        DBTableSerializableHelper helper = new DBTableSerializableHelper(this.getKeyJdbcKey());
+        helper.removeSerialize(tableName);
+        DBScanner dbScanner = new DBScanner(connection, this.properties);
+        DbTable dbTable = dbScanner.scanTable(tableName);
+        if (dbTable != null) {
+            this.updateDbTable(Collections.singletonList(dbTable));
+            this.success();
+        }
+    }
+
+    /**
+     * 全量刷新所有表的元数据
+     *
+     * @param connection 数据库连接
+     * @throws SQLException SQLException
+     */
+    public void refreshAll(Connection connection) throws SQLException {
+        DBScanner dbScanner = new DBScanner(connection, this.properties);
+        List<DbTable> scannedTables = new ArrayList<>(dbScanner.scanAllTables().values());
+        this.tables = scannedTables;
+        this.success();
     }
 }
