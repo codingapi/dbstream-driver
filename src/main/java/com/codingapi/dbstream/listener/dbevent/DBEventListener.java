@@ -81,21 +81,26 @@ public abstract class DBEventListener implements SQLExecuteListener {
 
 
     /**
-     * batch result 结果数组转化
+     * batch result 结果数组转化。
+     * <p>
+     * 返回的 List 长度恒等于批量行数 {@code size}。当 JDBC 驱动返回的结果数组长度
+     * 与批量行数不一致时（如 MySQL {@code rewriteBatchedStatements=true} 会将批量语句
+     * 合并/拆分执行，返回数组长度小于批量行数），对缺失位置按「成功但行数未知」补齐(1)，
+     * 既避免 {@link List#get(int)} 越界，也保证对应行的事件不被丢弃。
      */
-    private List<Object> batchResultToArrays(Object result, int size) {
+    List<Object> batchResultToArrays(Object result, int size) {
         List<Object> list = new ArrayList<>();
         if (result instanceof int[]) {
             int[] rows = (int[]) result;
-            for (int row : rows) {
-                list.add(row);
+            for (int i = 0; i < size; i++) {
+                list.add(i < rows.length ? rows[i] : 1);
             }
             return list;
         }
         if (result instanceof long[]) {
             long[] rows = (long[]) result;
-            for (long row : rows) {
-                list.add(row);
+            for (int i = 0; i < size; i++) {
+                list.add(i < rows.length ? rows[i] : 1L);
             }
             return list;
         }
