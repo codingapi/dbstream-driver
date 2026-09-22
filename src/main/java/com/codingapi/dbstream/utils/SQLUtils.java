@@ -81,27 +81,36 @@ public class SQLUtils {
     }
 
     /**
-     * 提取insert语句中values的内容
+     * 按分隔符切分 SQL 片段，仅在「括号深度为 0 且不在字符串字面量内」时切分。
+     * <p>
+     * 用于处理函数调用的参数逗号，例如 {@code replace(col, ?, ?)} 中的逗号不应被视为
+     * 列分隔符。支持 {@code ''} 转义的单引号，片段内容原样保留（不做转义还原）。
      */
-    public static List<String> parseInsertSQLValues(String sqlValues) {
+    public static List<String> splitTopLevel(String sql, char delimiter) {
         List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
+        if (sql == null || sql.isEmpty()) {
+            return result;
+        }
 
+        StringBuilder current = new StringBuilder();
         boolean inString = false;
         int parenDepth = 0;
 
-        for (int i = 0; i < sqlValues.length(); i++) {
-            char c = sqlValues.charAt(i);
+        for (int i = 0; i < sql.length(); i++) {
+            char c = sql.charAt(i);
 
             if (c == '\'') {
-                // 切换字符串状态（需处理转义的单引号）
-                if (inString && i + 1 < sqlValues.length() && sqlValues.charAt(i + 1) == '\'') {
-                    // SQL转义 '' -> '
-                    current.append('\'');
-                    i++; // 跳过下一个引号
+                current.append(c);
+                if (inString) {
+                    // 字符串内的 '' 为转义的单引号，仍处于字符串内
+                    if (i + 1 < sql.length() && sql.charAt(i + 1) == '\'') {
+                        current.append('\'');
+                        i++; // 跳过下一个引号
+                    } else {
+                        inString = false;
+                    }
                 } else {
-                    inString = !inString;
-                    current.append(c);
+                    inString = true;
                 }
             } else if (!inString) {
                 if (c == '(') {
@@ -110,7 +119,7 @@ public class SQLUtils {
                 } else if (c == ')') {
                     parenDepth--;
                     current.append(c);
-                } else if (c == ',' && parenDepth == 0) {
+                } else if (c == delimiter && parenDepth == 0) {
                     // 只有在括号层为0时才分割
                     result.add(current.toString().trim());
                     current.setLength(0);
@@ -127,6 +136,13 @@ public class SQLUtils {
         }
 
         return result;
+    }
+
+    /**
+     * 提取insert语句中values的内容
+     */
+    public static List<String> parseInsertSQLValues(String sqlValues) {
+        return splitTopLevel(sqlValues, ',');
     }
 
     /**
