@@ -64,6 +64,9 @@ public class UpdateSQLParser implements SQLParser {
     /**
      * 提取 SET 后面的字段名
      * 示例: SET name=?, age=?, updated_at=NOW()
+     * <p>
+     * SET 项之间才用逗号分隔，函数调用的参数逗号（如 {@code replace(col, ?, ?)}）不参与分割，
+     * 因此按括号深度与字符串状态切分；解析不出 {@code 列名=表达式} 结构的片段直接跳过。
      */
     public List<String> getColumnValues() {
         List<String> columns = new ArrayList<>();
@@ -74,23 +77,24 @@ public class UpdateSQLParser implements SQLParser {
         if (matcher.find()) {
             String setPart = matcher.group(1).trim();
 
-            // 分割字段赋值（按逗号分割）
-            String[] parts = setPart.split(",");
-            for (String part : parts) {
-                String[] kv = part.split("=", 2);
-                if (kv.length > 0) {
-                    String col = kv[0].trim();
+            // 按顶层逗号切分字段赋值
+            for (String part : SQLUtils.splitTopLevel(setPart, ',')) {
+                // SET 项形如 "列名 = 表达式"，取第一个等号左侧为列名
+                int eqIndex = part.indexOf('=');
+                if (eqIndex < 0) {
+                    continue;
+                }
+                String col = part.substring(0, eqIndex).trim();
 
-                    // 如果字段是带表别名的，如 "u.name"
-                    int dotIndex = col.lastIndexOf('.');
-                    if (dotIndex > 0) {
-                        col = col.substring(dotIndex + 1);
-                    }
+                // 如果字段是带表别名的，如 "u.name"
+                int dotIndex = col.lastIndexOf('.');
+                if (dotIndex > 0) {
+                    col = col.substring(dotIndex + 1);
+                }
 
-                    col = SQLUtils.stripQuotes(col);
-                    if (!col.isEmpty()) {
-                        columns.add(col);
-                    }
+                col = SQLUtils.stripQuotes(col);
+                if (!col.isEmpty()) {
+                    columns.add(col);
                 }
             }
         }

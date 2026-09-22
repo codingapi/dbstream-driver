@@ -40,7 +40,12 @@ public class UpdateDBEventParser implements DBEventParser {
     private void updateRows() throws SQLException {
         String query = this.loadUpdateRowSQL();
         List<Object> params = this.loadUpdateRowParamList();
-        prepareList = this.executeState.query(query, params);
+        try {
+            prepareList = this.executeState.query(query, params);
+        } catch (SQLException e) {
+            // dbstream 内部 SQL 不经过业务侧的 SQL 日志，失败时必须带上原文，否则报错会归因到业务 SQL
+            throw new SQLException("dbstream 前镜像查询失败, sql=" + query, e);
+        }
     }
 
     /**
@@ -101,7 +106,11 @@ public class UpdateDBEventParser implements DBEventParser {
 
     private List<Map<String, Object>> queryLatestData() throws SQLException {
         String sql = this.latestSQL();
-        return this.executeState.query(sql, new ArrayList<>());
+        try {
+            return this.executeState.query(sql, new ArrayList<>());
+        } catch (SQLException e) {
+            throw new SQLException("dbstream 后镜像查询失败, sql=" + sql, e);
+        }
     }
 
 
@@ -117,15 +126,20 @@ public class UpdateDBEventParser implements DBEventParser {
         querySQL.append(String.join(",", columns));
         querySQL.append(" FROM ").append(this.dbTable.getName());
         querySQL.append(" WHERE ");
+        List<String> conditions = new ArrayList<>();
         for (String primaryKey : this.dbTable.getPrimaryKeys()) {
-            querySQL.append(" ").append(primaryKey);
-            querySQL.append(" IN (");
             List<String> params = this.getPrimaryKeyStringValue(primaryKey);
-            querySQL.append(String.join(",", params));
-            querySQL.append(")");
-            querySQL.append(" AND ");
+            // 主键值列表为空时拼出的 "IN ()" 是非法 SQL，直接跳过该条件
+            if (params.isEmpty()) {
+                continue;
+            }
+            conditions.add(primaryKey + " IN (" + String.join(",", params) + ")");
         }
-        querySQL.append(" 1=1 ");
+        if (conditions.isEmpty()) {
+            // 没有任何可用的主键值时返回空结果集，避免退化为全表扫描
+            conditions.add("1=0");
+        }
+        querySQL.append(String.join(" AND ", conditions));
         return querySQL.toString();
     }
 
@@ -139,10 +153,15 @@ public class UpdateDBEventParser implements DBEventParser {
             for (String key : data.keySet()) {
                 if (key.equalsIgnoreCase(primaryKey)) {
                     Object value = data.get(key);
+                    // 主键理论上非空，取到 null 说明该行数据异常，跳过而不是拼出 "IN (null)"
+                    if (value == null) {
+                        continue;
+                    }
                     if (value instanceof String) {
-                        params.add(String.format("'%s'", value));
+                        // 字符串值需转义单引号，否则值本身含引号时会拼出非法 SQL
+                        params.add("'" + ((String) value).replace("'", "''") + "'");
                     } else {
-                        params.add(data.get(key).toString());
+                        params.add(String.valueOf(value));
                     }
                 }
             }
@@ -160,6 +179,10 @@ public class UpdateDBEventParser implements DBEventParser {
         }
         String jdbcUrl = this.executeState.getJdbcUrl();
         String jdbcKey = this.executeState.getJdbcKey();
+        // 前镜像为空说明没有可按主键关联的行，无法定位后镜像，直接返回空事件
+        if (this.prepareList.isEmpty()) {
+            return eventList;
+        }
         // 根据id查询最新的数据
         List<Map<String, Object>> latestData = this.queryLatestData();
         for (Map<String, Object> params : latestData) {

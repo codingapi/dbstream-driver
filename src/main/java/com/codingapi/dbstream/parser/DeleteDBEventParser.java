@@ -40,7 +40,12 @@ public class DeleteDBEventParser implements DBEventParser {
         String query = this.loadUpdateRowSQL();
         List<Object> params = this.loadUpdateRowParamList();
         prepareList.clear();
-        prepareList.addAll(this.executeState.query(query, params));
+        try {
+            prepareList.addAll(this.executeState.query(query, params));
+        } catch (SQLException e) {
+            // dbstream 内部 SQL 不经过业务侧的 SQL 日志，失败时必须带上原文，否则报错会归因到业务 SQL
+            throw new SQLException("dbstream 前镜像查询失败, sql=" + query, e);
+        }
     }
 
     /**

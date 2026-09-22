@@ -4,3 +4,9 @@ UPDATE user u SET name='Tom', age=? WHERE id=?|user|u|name,age|id=?
 UPDATE [user] AS t SET t.name=?, t.age=?|user|t|name,age|
 UPDATE schema.user AS u SET u.age=u.age+1|schema.user|u|age|
 UPDATE `user_info` SET nickname=?,email=?|user_info||nickname,email|
+UPDATE biz_pbm_organization SET short_name_tair=replace(short_name_tair,?,?) WHERE id<>? AND sys_deleted=0|biz_pbm_organization||short_name_tair|id<>? AND sys_deleted=0
+UPDATE user SET name=replace(name,?,?), age=? WHERE id=?|user||name,age|id=?
+UPDATE user SET name=concat(first_name, ',', last_name), age=? WHERE id=?|user||name,age|id=?
+UPDATE user SET amount=coalesce(amount, 0), note=?, updated_at=NOW()|user||amount,note,updated_at|
+UPDATE user AS u SET u.name=upper(u.name), u.age=substr(u.age, 1, 2) WHERE u.id=?|user|u|name,age|u.id=?
+UPDATE user SET info='a,b=c', name=?|user||info,name|
