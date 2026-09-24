@@ -160,7 +160,41 @@ DBStreamContext.getInstance().setDbEventSupporter(new DefaultDBEventSupporter())
 
 根据表名等信息来决定是否进行数据事件解析。仅当返回true的才会进行事件推送。DefaultDBTableSupportProvider为默认的实现机制。
 
-### 6. 查看表或情况表缓存数据（可选）
+### 6. 事件跳过控制（可选）
+
+`DBEventSupporter` 是全局静态的表级开关；如果只想让**某一次具体的 DML 执行**不产生事件（数据照常入库，仅事件被抑制），可以在执行前通过 `skipNextEvent` 打上一次性跳过标记：
+
+```java
+import com.codingapi.dbstream.DBStreamContext;
+import com.codingapi.dbstream.event.EventType;
+
+import java.util.Collections;
+
+// 场景：T_TEST 表插入 id=1001 时，跳过该条 INSERT 事件
+DBStreamContext.getInstance().skipNextEvent("T_TEST", EventType.INSERT,
+        Collections.singletonMap("ID", 1001));
+jdbcTemplate.update("INSERT INTO T_TEST (ID, NAME) VALUES (?, ?)", 1001, "seed");
+// → 数据入库，事件被抑制；标记已消费，后续插入事件恢复正常
+
+// 表级：跳过下一条对该表的 DML 事件（不限类型，SQL 执行前直接短路，省去前镜像查询）
+DBStreamContext.getInstance().skipNextEvent("T_TEST");
+
+// 复杂条件：自定义断言
+DBStreamContext.getInstance().skipNextEvent("T_TEST", EventType.UPDATE,
+        event -> "system".equals(event.getData().get("OWNER")));
+
+// 兜底：清空当前线程所有未消费的跳过标记
+DBStreamContext.getInstance().clearSkipEvents();
+```
+
+跳过规则说明：
+
+- **一次性消费**：表级标记（无数据匹配条件）对当前线程下一条匹配表名+类型的语句生效后自动失效；行级标记（Map 列值匹配或 Predicate 断言）在实际抑制了至少一个事件后才消费，同一语句（含批量、多行 VALUES）内所有命中的事件都会被跳过。
+- **匹配规则**：表名与列名均忽略大小写；Map 匹配的值兼容数值类型差异（如传入 `Integer 1001` 可匹配数据库返回的 `Long 1001`）。
+- **线程约束**：打标记的线程必须与执行 SQL 的线程一致（ThreadLocal 语义）。
+- **残留清理**：一直未命中的标记会保留到 `clearSkipEvents()` 被调用或数据库连接关闭时，建议标记紧贴 DML 执行，或在线程池等场景中用 try/finally 调用 `clearSkipEvents()` 兜底。
+
+### 7. 查看表或情况表缓存数据（可选）
 
 在项目启动以后，会在项目的根路径下创建.dbstream文件夹，文件夹中存储的内容为数据库的表扫描缓存数据。  
 文件夹的名称为jdbcKey的字段，文件夹下的内容为缓存的表结构信息，当表结构发生变化以后可以删除对应的文件进行更新。  
@@ -173,7 +207,7 @@ jdbcKey是通过sha256(jdbcUrl+schema)计算得来。
 
 ```
 
-### 7. 主键关系手动维护（可选）
+### 8. 主键关系手动维护（可选）
 
 在数据库中存在不存在物理的主键字段，但是存在业务主键字段，可通过手动配置的方式，手动标记字段为主键字段。在扫描后的配置文件下增加对应表名的.key文件，例如：M_USER.key
 ```
@@ -224,6 +258,23 @@ DBStreamContext.getInstance().cleanCustomListeners();
 ```java
 // 添加 SQL 表执行判断
 DBStreamContext.getInstance().setDbEventSupporter(DBEventSupporter dbEventSupporter);
+```
+
+#### 事件跳过控制
+
+一次性跳过标记（线程级），在执行 DML 前调用，详见[快速开始-事件跳过控制](#6-事件跳过控制可选)：
+
+```java
+// 表级：跳过下一条匹配该表的语句事件（type 为 null 表示所有类型）
+DBStreamContext.getInstance().skipNextEvent(String tableName);
+DBStreamContext.getInstance().skipNextEvent(String tableName, EventType type);
+
+// 行级：按数据列值匹配（列名忽略大小写）或自定义断言，实际抑制了事件才消费标记
+DBStreamContext.getInstance().skipNextEvent(String tableName, EventType type, Map<String, Object> dataMatch);
+DBStreamContext.getInstance().skipNextEvent(String tableName, EventType type, Predicate<DBEvent> predicate);
+
+// 清空当前线程所有未消费的跳过标记
+DBStreamContext.getInstance().clearSkipEvents();
 ```
 
 #### 元数据管理

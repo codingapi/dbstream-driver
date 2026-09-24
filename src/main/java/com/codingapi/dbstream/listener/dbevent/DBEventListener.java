@@ -2,6 +2,8 @@ package com.codingapi.dbstream.listener.dbevent;
 
 import com.codingapi.dbstream.DBStreamContext;
 import com.codingapi.dbstream.event.DBEvent;
+import com.codingapi.dbstream.event.DBEventSkipContext;
+import com.codingapi.dbstream.event.EventType;
 import com.codingapi.dbstream.event.TransactionEventPools;
 import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.listener.SQLExecuteListener;
@@ -33,6 +35,11 @@ public abstract class DBEventListener implements SQLExecuteListener {
      */
     public abstract DBEventParser createDbEventParser(SQLRunningState runningState, SQLParser sqlParser, DbTable dbTable);
 
+    /**
+     * 当前监听SQL对应的事件类型
+     */
+    public abstract EventType getEventType();
+
     @Override
     public void before(SQLRunningState runningState) throws SQLException {
         String sql = runningState.getSql();
@@ -50,6 +57,10 @@ public abstract class DBEventListener implements SQLExecuteListener {
                 DbTable dbTable = runningState.getDbTable(tableName);
                 // 判断是否支持对该表的DB事件支持
                 if (dbTable != null && DBStreamContext.getInstance().support(runningState.getDriverProperties(), dbTable)) {
+                    // 语句级跳过判定：命中表级跳过标记则消费并直接短路，不做前镜像解析，不产生事件
+                    if (DBEventSkipContext.getInstance().skipStatement(dbTable.getName(), this.getEventType())) {
+                        return;
+                    }
                     // 是否批量模式判断
                     if (runningState.isJdbcBatchMode()) {
                         // 批量模式下，将获取批量的SQL执行结果数据
@@ -133,6 +144,8 @@ public abstract class DBEventListener implements SQLExecuteListener {
                     if (dataParser != null) {
                         // 获取DB事件信息
                         List<DBEvent> eventList = dataParser.loadEvents(arrays.get(i));
+                        // 行级跳过过滤：剔除命中跳过标记的事件
+                        eventList = DBEventSkipContext.getInstance().filterEvents(eventList);
                         TransactionEventPools.getInstance().addEvents(sqlRunningState.getJdbcQuery(), transactionKey, eventList);
                     }
                 }
@@ -144,6 +157,8 @@ public abstract class DBEventListener implements SQLExecuteListener {
                 if (dataParser != null) {
                     // 获取DB事件信息
                     List<DBEvent> eventList = dataParser.loadEvents(result);
+                    // 行级跳过过滤：剔除命中跳过标记的事件
+                    eventList = DBEventSkipContext.getInstance().filterEvents(eventList);
                     TransactionEventPools.getInstance().addEvents(runningState.getJdbcQuery(), transactionKey, eventList);
                 }
                 // 清空本地缓存数据

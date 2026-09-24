@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.listener.dbevent;
 
+import com.codingapi.dbstream.event.EventType;
 import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.parser.DBEventParser;
 import com.codingapi.dbstream.parser.DeleteDBEventParser;
@@ -28,6 +29,11 @@ public class DeleteEventListener extends DBEventListener {
     @Override
     public DBEventParser createDbEventParser(SQLRunningState runningState, SQLParser sqlParser, DbTable dbTable) {
         return new DeleteDBEventParser(runningState, (DeleteSQLParser) sqlParser, dbTable);
+    }
+
+    @Override
+    public EventType getEventType() {
+        return EventType.DELETE;
     }
 
 }

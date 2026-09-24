@@ -2,6 +2,7 @@ package com.codingapi.dbstream.proxy;
 
 import com.codingapi.dbstream.query.JdbcQuery;
 import com.codingapi.dbstream.scanner.DBMetaData;
+import com.codingapi.dbstream.event.DBEventSkipContext;
 import com.codingapi.dbstream.event.TransactionEventPools;
 import lombok.Getter;
 
@@ -90,6 +91,8 @@ public class ConnectionProxy implements Connection {
     public void close() throws SQLException {
         connection.close();
         TransactionEventPools.getInstance().reset();
+        // 连接关闭以后，清理当前线程未消费的事件跳过标记，避免线程复用时残留
+        DBEventSkipContext.getInstance().clear();
         // 事务关闭以后，更换事务的标识信息
         this.generateTransactionKey();
     }
