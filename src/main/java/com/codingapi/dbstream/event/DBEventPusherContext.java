@@ -7,20 +7,18 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 事件控制上下文对象
+ * 事件推送控制上下文对象
  */
-public class DBEventContext {
+public class DBEventPusherContext {
 
     private final List<DBEventPusher> pushers = new CopyOnWriteArrayList<>();
 
     @Getter
-    private final static DBEventContext instance = new DBEventContext();
+    private final static DBEventPusherContext instance = new DBEventPusherContext();
 
     private final DefaultDBEventPusher defaultDBEventPusher = new DefaultDBEventPusher();
 
-    private DBEventContext() {
-
-    }
+    private DBEventPusherContext() {}
 
     void push(JdbcQuery jdbcQuery, List<DBEvent> events) {
         if (events == null || events.isEmpty()) {

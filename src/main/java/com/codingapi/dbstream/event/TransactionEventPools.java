@@ -67,7 +67,7 @@ public class TransactionEventPools {
             currentEvents.forEach(dbEvent -> {
                 dbEvent.setTransactionKey(transactionKey);
             });
-            DBEventContext.getInstance().push(jdbcQuery, currentEvents);
+            DBEventPusherContext.getInstance().push(jdbcQuery, currentEvents);
             currentEvents.clear();
         }
         this.clear();

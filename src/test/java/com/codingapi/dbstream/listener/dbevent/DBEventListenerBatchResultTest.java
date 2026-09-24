@@ -1,5 +1,6 @@
 package com.codingapi.dbstream.listener.dbevent;
 
+import com.codingapi.dbstream.event.EventType;
 import com.codingapi.dbstream.listener.SQLRunningState;
 import com.codingapi.dbstream.parser.DBEventParser;
 import com.codingapi.dbstream.parser.SQLParser;
@@ -35,6 +36,11 @@ class DBEventListenerBatchResultTest {
 
             @Override
             public DBEventParser createDbEventParser(SQLRunningState runningState, SQLParser sqlParser, DbTable dbTable) {
+                return null;
+            }
+
+            @Override
+            public EventType getEventType() {
                 return null;
             }
         };
